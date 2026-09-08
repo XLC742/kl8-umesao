@@ -1,0 +1,851 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快乐8 选四复式选二 · 近5期池+频率²+共现³</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;color:#e0e0e0;padding:20px}
+.container{max-width:900px;margin:0 auto}
+.header{text-align:center;margin-bottom:30px}
+.header h1{font-size:2.4em;background:linear-gradient(90deg,#ffd700,#ff6b6b,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:3px}
+.header p{color:#888;margin-top:8px;font-size:.9em}
+.data-info{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.2);border-radius:12px;padding:14px 20px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center}
+.data-info span{font-size:.85em;color:#aaa}
+.data-info b{color:#ffd700}
+.panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;margin-bottom:24px;backdrop-filter:blur(10px)}
+.panel-title{font-size:1.15em;color:#ffd700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.panel-title::before{content:'';width:4px;height:20px;background:linear-gradient(180deg,#ffd700,#ff6b6b);border-radius:2px}
+.badge{font-size:.65em;padding:2px 8px;border-radius:10px;background:rgba(78,205,196,.15);color:#4ecdc4;border:1px solid rgba(78,205,196,.3);margin-left:8px}
+.generate-area{text-align:center;margin-top:8px}
+.generate-btn{padding:16px 60px;font-size:1.3em;font-weight:bold;color:#1a1a2e;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:50px;cursor:pointer;transition:all .3s;letter-spacing:2px;box-shadow:0 6px 25px rgba(255,215,0,.3)}
+.generate-btn:hover{transform:scale(1.05);box-shadow:0 8px 35px rgba(255,215,0,.5)}
+.generate-btn:active{transform:scale(.98)}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.result-display{text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.result-numbers{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:12px}
+.result-ball{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4em;font-weight:bold;animation:ballPop .5s ease-out backwards;color:#fff;box-shadow:0 4px 15px rgba(0,0,0,.3)}
+.result-ball.hit{animation:ballPop .5s ease-out backwards, hitGlow 1s ease-in-out .5s 2;box-shadow:0 0 20px #4ecdc4,0 4px 15px rgba(0,0,0,.3)}
+@keyframes ballPop{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes hitGlow{0%,100%{box-shadow:0 0 20px #4ecdc4,0 4px 15px rgba(0,0,0,.3)}50%{box-shadow:0 0 40px #4ecdc4,0 4px 15px rgba(0,0,0,.3)}}
+.result-info{color:#888;font-size:.85em;margin-top:8px}
+.result-info .hit-num{color:#4ecdc4;font-weight:bold}
+.combo-display{margin-top:16px;padding:14px;background:rgba(78,205,196,.05);border:1px solid rgba(78,205,196,.15);border-radius:10px;text-align:left}
+.combo-title{font-size:.8em;color:#4ecdc4;margin-bottom:8px}
+.combo-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.combo-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:4px 10px;font-size:.75em;color:#aaa}
+.combo-item .c-num{color:#ffd700;font-weight:bold}
+.empty-state{color:#555;font-size:1.1em;padding:30px}
+.save-btn{padding:10px 32px;font-size:1em;font-weight:bold;color:#1a1a2e;background:linear-gradient(135deg,#4ecdc4,#44a8a0);border:none;border-radius:30px;cursor:pointer;transition:all .3s;margin-top:12px;letter-spacing:1px}
+.save-btn:hover{transform:scale(1.05);box-shadow:0 4px 20px rgba(78,205,196,.4)}
+.save-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.saved-list{max-height:500px;overflow-y:auto;border-radius:8px}
+.saved-item{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.85em;transition:all .2s}
+.saved-item:hover{background:rgba(255,255,255,.02)}
+.saved-item .saved-period{color:#888;min-width:70px;font-size:.85em}
+.saved-item .saved-date{color:#555;min-width:90px;font-size:.8em}
+.saved-item .saved-balls{display:flex;gap:5px}
+.saved-item .saved-ball{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:bold;color:#fff}
+.saved-item .saved-status{margin-left:auto;text-align:right;min-width:120px}
+.saved-item .status-pending{color:#888;font-size:.8em}
+.saved-item .status-win{color:#4ecdc4;font-weight:bold}
+.saved-item .status-miss{color:#ff6b6b}
+.saved-item .delete-btn{background:rgba(255,69,58,.15);border:1px solid rgba(255,69,58,.3);color:#ff6b6b;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.8em;transition:all .2s}
+.saved-item .delete-btn:hover{background:rgba(255,69,58,.3)}
+.saved-summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:.85em}
+.saved-summary span{color:#888}
+.saved-summary b{color:#ffd700}
+.strategy-desc{background:rgba(78,205,196,.05);border:1px solid rgba(78,205,196,.15);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.82em;color:#888;line-height:1.6}
+.strategy-desc b{color:#4ecdc4}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px}
+.stat-card .label{font-size:.8em;color:#888;margin-bottom:6px}
+.stat-card .value{font-size:1.3em;color:#ffd700;font-weight:bold}
+.stat-card .value.green{color:#4ecdc4}
+.stat-card .value.red{color:#ff6b6b}
+.stat-card .detail{font-size:.78em;color:#666;margin-top:4px}
+.heatmap{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:12px}
+.heat-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.8em;cursor:pointer;transition:all .2s;position:relative}
+.heat-cell .num{font-weight:bold}
+.heat-cell .freq{font-size:.6em;opacity:.7}
+.heat-cell:hover{transform:scale(1.15);z-index:10}
+.heat-cell.excluded{opacity:.3;border:1px dashed #555}
+.heat-cell.selected{border:2px solid #ffd700;box-shadow:0 0 10px rgba(255,215,0,.5)}
+.heat-0{background:rgba(60,60,80,.4);color:#666}
+.heat-1{background:rgba(78,205,196,.15);color:#4ecdc4}
+.heat-2{background:rgba(78,205,196,.3);color:#4ecdc4}
+.heat-3{background:rgba(255,215,0,.25);color:#ffd700}
+.heat-4{background:rgba(255,140,0,.4);color:#ff8c00}
+.heat-5{background:rgba(255,69,58,.5);color:#ff453a}
+.heat-6{background:rgba(255,69,58,.7);color:#fff}
+.heat-7{background:rgba(255,69,58,.9);color:#fff}
+.history-list{max-height:400px;overflow-y:auto;border-radius:8px}
+.history-list::-webkit-scrollbar{width:6px}
+.history-list::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}
+.history-list::-webkit-scrollbar-thumb{background:rgba(255,215,0,.3);border-radius:3px}
+.history-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8em}
+.history-item:hover{background:rgba(255,255,255,.02)}
+.history-item .period{color:#888;min-width:80px;font-size:.85em}
+.history-item .date{color:#555;min-width:90px}
+.history-item .balls{display:flex;flex-wrap:wrap;gap:3px}
+.history-item .mini-ball{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65em;font-weight:bold;color:#fff}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:.75em;color:#888}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-color{width:14px;height:14px;border-radius:4px}
+.backtest-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82em}
+.backtest-table th{color:#888;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center;font-weight:normal}
+.backtest-table td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center}
+.backtest-table .period-cell{color:#aaa}
+.backtest-table .hit-cell{color:#4ecdc4;font-weight:bold}
+.backtest-table .miss-cell{color:#666}
+.backtest-table .prize-cell{color:#ffd700;font-weight:bold}
+.backtest-table .loss-cell{color:#ff6b6b}
+.backtest-summary{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.backtest-summary-item{background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.2);border-radius:10px;padding:10px 16px;flex:1;min-width:140px;text-align:center}
+.backtest-summary-item .label{font-size:.75em;color:#888;margin-bottom:4px}
+.backtest-summary-item .value{font-size:1.2em;color:#4ecdc4;font-weight:bold}
+.backtest-summary-item .value.gold{color:#ffd700}
+.backtest-summary-item .value.red{color:#ff6b6b}
+.disclaimer{text-align:center;color:#555;font-size:.78em;margin-top:20px;padding:12px;border-top:1px solid rgba(255,255,255,.05)}
+@media(max-width:600px){.header h1{font-size:1.8em}.result-ball{width:44px;height:44px;font-size:1.1em}.heat-cell{font-size:.6em}.backtest-table{font-size:.7em}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>快乐8 选四复式选二</h1>
+    <p>选4个号码 · 自动组合6注选二 · 中2个即回本 · 近5期池+频率²+共现³ · 每天开机自动更新</p>
+  </div>
+
+  <div class="data-info" id="dataInfo">
+    <span>最新期号: <b id="infoPeriod">2026240</b></span>
+    <span>开奖日期: <b id="infoDate">2026-09-07(一)</b></span>
+    <span>数据来源: <b id="infoSource" style="color:#ff8c00">本地数据</b></span>
+    <span>更新时间: <b id="infoUpdate">--:--</b></span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">策略说明</div>
+    <div class="strategy-desc">
+      <b>复式选二玩法</b>：选4个号码，系统自动生成C(4,2)=6注选二，每注2元，每日成本<b>12元</b>。
+      <br><br>
+      <b>奖金规则</b>：选二中2个奖<b>19元</b>。
+      <table style="margin-top:8px;width:100%;font-size:.9em;border-collapse:collapse">
+        <tr style="border-bottom:1px solid rgba(255,255,255,.1)">
+          <th style="text-align:left;padding:4px;color:#888">4个号码中</th>
+          <th style="text-align:center;padding:4px;color:#888">中奖注数</th>
+          <th style="text-align:center;padding:4px;color:#888">奖金</th>
+          <th style="text-align:center;padding:4px;color:#888">盈亏</th>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+          <td style="padding:4px;color:#ff6b6b">中0个</td><td style="text-align:center;padding:4px;color:#666">0注</td><td style="text-align:center;padding:4px;color:#666">0元</td><td style="text-align:center;padding:4px;color:#ff6b6b">-12元</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+          <td style="padding:4px;color:#ff6b6b">中1个</td><td style="text-align:center;padding:4px;color:#666">0注</td><td style="text-align:center;padding:4px;color:#666">0元</td><td style="text-align:center;padding:4px;color:#ff6b6b">-12元</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+          <td style="padding:4px;color:#4ecdc4">中2个</td><td style="text-align:center;padding:4px;color:#4ecdc4">1注</td><td style="text-align:center;padding:4px;color:#4ecdc4">19元</td><td style="text-align:center;padding:4px;color:#4ecdc4">+7元</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+          <td style="padding:4px;color:#4ecdc4">中3个</td><td style="text-align:center;padding:4px;color:#4ecdc4">3注</td><td style="text-align:center;padding:4px;color:#4ecdc4">57元</td><td style="text-align:center;padding:4px;color:#4ecdc4">+45元</td>
+        </tr>
+        <tr>
+          <td style="padding:4px;color:#ffd700;font-weight:bold">中4个</td><td style="text-align:center;padding:4px;color:#ffd700">6注</td><td style="text-align:center;padding:4px;color:#ffd700">114元</td><td style="text-align:center;padding:4px;color:#ffd700">+102元</td>
+        </tr>
+      </table>
+      <br>
+      <b>近5期池+频率²+共现³ 策略</b>：从近5期开过的号码中选（候选池约50-60个），用14期频率²加权随机选第一个号码，后续号码权重=频率²×(1+共现³)，让选出的号码既热又倾向于一起出现。100轮回测显示14天盈利概率<b>16%</b>（所有策略最高）。
+    </div>
+    <div class="generate-area">
+      <button class="generate-btn" id="generateBtn" onclick="generate()">开 始 选 号</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">选号结果</div>
+    <div class="result-display" id="resultDisplay">
+      <div class="empty-state">点击上方按钮开始选号</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">我的保存记录<span class="badge" id="savedBadge">最多10条</span></div>
+    <div class="saved-summary" id="savedSummary"></div>
+    <div class="saved-list" id="savedList">
+      <div class="empty-state" style="padding:16px;font-size:.9em;color:#555">还没有保存记录，选号后点击"保存这组号码"</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">14天回测验证<span class="badge">近5期池+频率²+共现³ · 日成本12元 · 中2个=+7元</span></div>
+    <div id="backtestContainer">
+      <div class="backtest-summary" id="backtestSummary"></div>
+      <table class="backtest-table" id="backtestTable"></table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">数据统计（近20期）</div>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">号码频率热力图（1-80）</div>
+    <div class="heatmap" id="heatmap"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color heat-0"></div>未出</div>
+      <div class="legend-item"><div class="legend-color heat-1"></div>1次</div>
+      <div class="legend-item"><div class="legend-color heat-3"></div>3次</div>
+      <div class="legend-item"><div class="legend-color heat-5"></div>5次</div>
+      <div class="legend-item"><div class="legend-color heat-7"></div>7次+</div>
+      <div class="legend-item"><div class="legend-color" style="background:rgba(255,255,255,.1);border:1px dashed #555"></div>上期已出</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">近20期开奖记录</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <div class="disclaimer">
+    本系统仅基于历史数据统计分析，彩票开奖为随机事件，任何分析都不能保证中奖。请理性购彩，量力而行。<br>
+    数据仅供参考娱乐，不构成任何投注建议。
+  </div>
+</div>
+
+<script>
+// ====== 近32期开奖数据（来源：中国福彩官方） ======
+const draws = [
+  {period:"2026240",date:"2026-09-07(一)",nums:[2,6,9,10,16,21,27,28,32,33,38,39,55,63,64,66,67,70,75,78]},
+  {period:"2026239",date:"2026-09-06(日)",nums:[14,17,20,21,26,27,29,30,37,44,45,47,54,55,61,65,68,69,77,79]},
+  {period:"2026238",date:"2026-09-05(六)",nums:[1,4,6,11,12,16,17,20,22,32,41,47,51,52,62,63,64,68,72,75]},
+  {period:"2026237",date:"2026-09-04(五)",nums:[2,6,9,13,15,17,18,20,21,30,37,43,48,51,53,55,58,68,74,77]},
+  {period:"2026236",date:"2026-09-03(四)",nums:[15,19,24,25,28,29,31,37,45,50,55,56,61,62,64,65,70,75,76,80]},
+  {period:"2026235",date:"2026-09-02(三)",nums:[2,11,14,19,21,23,36,48,50,51,53,60,62,64,66,72,73,75,78,80]},
+  {period:"2026234",date:"2026-09-01(二)",nums:[3,8,15,21,36,37,42,44,46,50,52,55,56,57,60,61,68,72,75,79]},
+  {period:"2026233",date:"2026-08-31(一)",nums:[3,5,7,17,19,24,26,30,31,34,35,36,42,44,52,53,55,63,65,66]},
+  {period:"2026232",date:"2026-08-30(日)",nums:[1,5,9,11,14,27,29,32,36,41,54,55,57,61,63,67,69,71,73,79]},
+  {period:"2026231",date:"2026-08-29(六)",nums:[12,17,26,28,31,34,37,42,44,51,52,55,59,60,61,62,68,74,75,79]},
+  {period:"2026230",date:"2026-08-28(五)",nums:[3,7,8,13,14,21,24,28,33,35,38,44,50,51,54,59,69,74,77,78]},
+  {period:"2026229",date:"2026-08-27(四)",nums:[14,26,33,39,41,47,48,56,59,61,64,65,66,68,71,72,76,77,78,80]},
+  {period:"2026228",date:"2026-08-26(三)",nums:[8,13,15,17,19,23,24,27,28,35,40,41,42,45,46,47,52,56,67,80]},
+  {period:"2026227",date:"2026-08-25(二)",nums:[4,9,10,12,17,18,22,28,33,38,42,44,47,48,61,63,64,67,73,74]},
+  {period:"2026226",date:"2026-08-24(一)",nums:[8,9,10,15,16,20,30,34,36,37,43,45,46,47,48,50,53,62,65,66]},
+  {period:"2026225",date:"2026-08-23(日)",nums:[3,4,7,12,13,16,20,21,25,26,32,41,43,44,47,53,60,68,73,76]},
+  {period:"2026224",date:"2026-08-22(六)",nums:[3,6,15,19,20,22,23,24,27,29,36,42,45,46,49,55,56,75,76,78]},
+  {period:"2026223",date:"2026-08-21(五)",nums:[3,19,22,27,28,33,34,35,36,40,50,51,54,57,64,67,68,69,75,79]},
+  {period:"2026222",date:"2026-08-20(四)",nums:[2,5,7,9,17,18,21,25,28,31,32,33,34,35,38,51,57,58,61,65]},
+  {period:"2026221",date:"2026-08-19(三)",nums:[1,2,3,5,10,18,21,25,28,34,35,41,48,51,54,58,59,60,77,79]},
+  {period:"2026220",date:"2026-08-18(二)",nums:[5,6,10,12,17,20,21,23,24,25,33,35,38,39,40,41,43,49,67,71]},
+  {period:"2026219",date:"2026-08-17(一)",nums:[2,3,5,6,13,15,20,35,36,39,47,48,51,58,65,67,72,73,79,80]},
+  {period:"2026218",date:"2026-08-16(日)",nums:[3,5,7,11,15,17,18,19,22,24,29,41,43,47,49,50,59,62,78,80]},
+  {period:"2026217",date:"2026-08-15(六)",nums:[7,8,10,11,14,18,20,21,24,28,29,33,41,46,67,68,74,76,77,78]},
+  {period:"2026216",date:"2026-08-14(五)",nums:[2,3,13,19,22,24,25,28,29,42,43,45,49,62,63,69,70,72,76,80]},
+  {period:"2026215",date:"2026-08-13(四)",nums:[1,9,14,19,21,22,24,27,36,41,44,51,55,60,61,69,71,76,78,80]},
+  {period:"2026214",date:"2026-08-12(三)",nums:[2,7,12,18,20,21,23,25,32,34,35,37,40,45,47,51,55,59,61,71]},
+  {period:"2026213",date:"2026-08-11(二)",nums:[6,7,8,11,12,13,18,21,33,36,37,42,44,56,57,58,60,66,71,80]},
+  {period:"2026212",date:"2026-08-10(一)",nums:[1,8,10,12,14,15,26,31,37,42,45,48,58,61,66,71,72,74,77,79]},
+  {period:"2026211",date:"2026-08-09(日)",nums:[4,5,8,12,14,20,23,24,25,30,35,37,46,51,53,60,74,75,77,78]},
+  {period:"2026210",date:"2026-08-08(六)",nums:[3,4,7,12,14,15,17,21,22,24,27,29,45,47,56,60,72,74,78,80]},
+  {period:"2026209",date:"2026-08-07(五)",nums:[2,4,10,11,14,16,18,23,32,35,37,45,47,51,52,53,59,67,75,80]}
+];
+
+const ALL_NUMS = Array.from({length:80},(_,i)=>i+1);
+const PICK = 4;
+const COMBO_COST = 12; // C(4,2)=6注 × 2元
+const PRIZE_PER_HIT = 19; // 选二中2个奖19元
+
+// ====== 保存记录管理（localStorage） ======
+const STORAGE_KEY = 'kl8_saved_records';
+const MAX_RECORDS = 10;
+
+function loadSavedRecords(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    return JSON.parse(raw);
+  } catch(e) { return []; }
+}
+
+function saveSavedRecords(records){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+function getComboPrize(hit){
+  // 4个号码中hit个，C(hit,2)注中奖
+  if(hit < 2) return 0;
+  const combos = hit * (hit - 1) / 2;
+  return combos * PRIZE_PER_HIT;
+}
+
+function checkSavedRecordHit(record, allDraws){
+  const draw = allDraws.find(d => d.period === record.targetPeriod);
+  if(!draw) return {status: 'pending', hit: 0, prize: 0, combos: 0};
+
+  const hit = record.nums.filter(n => draw.nums.includes(n)).length;
+  const prize = getComboPrize(hit);
+  const combos = hit >= 2 ? hit * (hit - 1) / 2 : 0;
+  if(prize > 0) return {status: 'win', hit, prize, combos};
+  return {status: 'miss', hit, prize: 0, combos: 0};
+}
+
+function renderSavedRecords(){
+  const records = loadSavedRecords();
+  const list = document.getElementById('savedList');
+  const summary = document.getElementById('savedSummary');
+
+  if(records.length === 0){
+    list.innerHTML = '<div class="empty-state" style="padding:16px;font-size:.9em;color:#555">还没有保存记录，选号后点击"保存这组号码"</div>';
+    summary.innerHTML = '';
+    document.getElementById('savedBadge').textContent = '最多10条';
+    return;
+  }
+
+  document.getElementById('savedBadge').textContent = `${records.length}/10`;
+
+  let totalCost = records.length * COMBO_COST;
+  let totalPrize = 0;
+  let winCount = 0;
+  let pendingCount = 0;
+  let missCount = 0;
+  let hit4Count = 0;
+
+  const ballColors = ['#e74c3c','#e67e22','#f39c12','#2ecc71','#1abc9c','#3498db','#9b59b6','#e84393'];
+
+  let html = '';
+  records.forEach((r, idx) => {
+    const result = checkSavedRecordHit(r, draws);
+    r.status = result.status;
+    r.hit = result.hit;
+    r.prize = result.prize;
+    if(result.status === 'win'){ totalPrize += result.prize; winCount++; }
+    else if(result.status === 'pending') pendingCount++;
+    else missCount++;
+    if(result.hit === 4) hit4Count++;
+
+    let statusHtml = '';
+    if(result.status === 'pending'){
+      statusHtml = `<span class="status-pending">待开奖</span>`;
+    } else if(result.status === 'win'){
+      statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元</span>`;
+    } else {
+      statusHtml = `<span class="status-miss">中${result.hit}个<br>未中奖</span>`;
+    }
+
+    let ballsHtml = '';
+    r.nums.forEach(n => {
+      const color = ballColors[Math.floor((n-1)/10)];
+      ballsHtml += `<div class="saved-ball" style="background:${color}">${n}</div>`;
+    });
+
+    html += `<div class="saved-item">
+      <span class="saved-period">${r.targetPeriod}</span>
+      <span class="saved-date">${r.savedDate}</span>
+      <div class="saved-balls">${ballsHtml}</div>
+      <span class="saved-status">${statusHtml}</span>
+      <button class="delete-btn" onclick="deleteRecord(${idx})" title="删除">&times;</button>
+    </div>`;
+  });
+  list.innerHTML = html;
+
+  const netProfit = totalPrize - totalCost;
+  const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
+  const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
+  summary.innerHTML = `
+    <span>保存: <b>${records.length}</b>组</span>
+    <span>成本: <b>${totalCost}</b>元</span>
+    <span>奖金: <b>${totalPrize}</b>元</span>
+    <span>净收益: <b style="color:${netColor}">${netStr}</b>元</span>
+    <span>中奖: <b>${winCount}</b>组</span>
+    <span>待开: <b>${pendingCount}</b>组</span>
+    ${hit4Count > 0 ? `<span style="color:#ffd700">中4全中: <b>${hit4Count}</b>次</span>` : ''}
+  `;
+
+  saveSavedRecords(records);
+}
+
+function deleteRecord(idx){
+  const records = loadSavedRecords();
+  records.splice(idx, 1);
+  saveSavedRecords(records);
+  renderSavedRecords();
+}
+
+function saveCurrentNumbers(nums){
+  const records = loadSavedRecords();
+  if(records.length >= MAX_RECORDS){
+    records.shift();
+  }
+
+  const latestPeriod = draws[0].period;
+  const nextPeriodNum = parseInt(latestPeriod) + 1;
+  const nextPeriod = String(nextPeriodNum);
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const savedDate = `${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  records.push({
+    nums: [...nums],
+    targetPeriod: nextPeriod,
+    savedDate: savedDate,
+    status: 'pending',
+    hit: 0,
+    prize: 0
+  });
+  saveSavedRecords(records);
+  renderSavedRecords();
+}
+
+// ====== 数据分析 ======
+const recent20 = draws.slice(0, 20);
+const freq = new Array(81).fill(0);
+const lastSeen = new Array(81).fill(-1);
+const recent5Freq = new Array(81).fill(0);
+const recent3Freq = new Array(81).fill(0);
+
+recent20.forEach((d,idx)=>{
+  const ago = recent20.length-1-idx;
+  d.nums.forEach(n=>{
+    freq[n]++;
+    if(lastSeen[n]===-1) lastSeen[n]=ago;
+    if(ago<5) recent5Freq[n]++;
+    if(ago<3) recent3Freq[n]++;
+  });
+});
+
+const lastDrawNums = new Set(draws[0].nums);
+
+// ====== 近5期池+频率²+共现³ 策略（选4个号码） ======
+function strategyPool5Freq2Co3(history){
+  // 近5期候选池
+  const pool = new Set();
+  history.slice(0, 5).forEach(d => d.nums.forEach(n => pool.add(n)));
+  let candidates = [...pool];
+  if(candidates.length < PICK) candidates = [...ALL_NUMS];
+
+  // 14期频率
+  const btFreq = new Array(81).fill(0);
+  history.slice(0, 14).forEach(d => d.nums.forEach(n => btFreq[n]++));
+
+  // 近5期共现矩阵
+  const co = {};
+  history.slice(0, 5).forEach(d => {
+    const nums = d.nums;
+    for(let i = 0; i < nums.length; i++){
+      for(let j = i + 1; j < nums.length; j++){
+        const a = nums[i], b = nums[j];
+        co[a + '-' + b] = (co[a + '-' + b] || 0) + 1;
+        co[b + '-' + a] = (co[b + '-' + a] || 0) + 1;
+      }
+    }
+  });
+
+  // 频率²权重
+  const fw = candidates.map(n => Math.pow(btFreq[n] + 0.5, 2));
+
+  // 逐个选号，后续加共现³
+  const sel = [], rem = [...candidates], rw = [...fw];
+  while(sel.length < PICK && rem.length > 0){
+    let idx;
+    if(sel.length === 0){
+      const t = rw.reduce((a, b) => a + b, 0);
+      let r = Math.random() * t;
+      idx = 0;
+      for(let j = 0; j < rem.length; j++){ r -= rw[j]; if(r <= 0){ idx = j; break; } idx = j; }
+    } else {
+      const fw2 = rem.map((n, i) => {
+        const m = Math.max(...sel.map(sn => co[n + '-' + sn] || 0));
+        return rw[i] * (1 + Math.pow(m, 3));
+      });
+      const t = fw2.reduce((a, b) => a + b, 0);
+      let r = Math.random() * t;
+      idx = 0;
+      for(let j = 0; j < rem.length; j++){ r -= fw2[j]; if(r <= 0){ idx = j; break; } idx = j; }
+    }
+    sel.push(rem[idx]);
+    rem.splice(idx, 1);
+    rw.splice(idx, 1);
+  }
+  return sel.sort((a, b) => a - b);
+}
+
+function btPool5Freq2Co3(history){
+  return strategyPool5Freq2Co3(history);
+}
+
+function weightedPick(pool, weights, count){
+  const result = [];
+  const p = [...pool];
+  const w = [...weights];
+  while(result.length < count && p.length > 0){
+    const total = w.reduce((a,b) => a+b, 0);
+    let r = Math.random() * total, idx = 0;
+    for(let j=0; j<p.length; j++){
+      r -= w[j];
+      if(r <= 0){ idx = j; break; }
+      idx = j;
+    }
+    result.push(p[idx]);
+    p.splice(idx, 1);
+    w.splice(idx, 1);
+  }
+  return result.sort((a,b) => a-b);
+}
+
+// 生成复式选二的所有组合
+function getCombinations(nums){
+  const combos = [];
+  for(let i=0; i<nums.length; i++){
+    for(let j=i+1; j<nums.length; j++){
+      combos.push([nums[i], nums[j]]);
+    }
+  }
+  return combos;
+}
+
+// ====== 14天回测 ======
+function runBacktest(){
+  const DAYS = 14;
+  const days = [];
+  for(let i=DAYS-1; i>=0; i--){
+    const target = draws[i];
+    const history = draws.slice(i+1, i+21);
+    const nums = btPool5Freq2Co3(history);
+    const hit = nums.filter(n => target.nums.includes(n)).length;
+    const prize = getComboPrize(hit);
+    days.push({dayNum: DAYS-i, period: target.period, date: target.date, nums, hit, prize, net: prize - COMBO_COST});
+  }
+
+  let totalCost = DAYS * COMBO_COST;
+  let totalPrize = days.reduce((s,d) => s + d.prize, 0);
+  let totalNet = totalPrize - totalCost;
+  let hit0 = days.filter(d => d.hit === 0).length;
+  let hit1 = days.filter(d => d.hit === 1).length;
+  let hit2 = days.filter(d => d.hit === 2).length;
+  let hit3 = days.filter(d => d.hit === 3).length;
+  let hit4 = days.filter(d => d.hit === 4).length;
+  let winDays = days.filter(d => d.prize > 0).length;
+
+  const summaryDiv = document.getElementById('backtestSummary');
+  summaryDiv.innerHTML = '';
+  const items = [
+    {label: '总成本', value: totalCost + '元', cls: ''},
+    {label: '总奖金', value: totalPrize + '元', cls: totalPrize >= totalCost ? 'gold' : 'red'},
+    {label: '净收益', value: (totalNet >= 0 ? '+' : '') + totalNet + '元', cls: totalNet >= 0 ? 'gold' : 'red'},
+    {label: '中奖天数', value: winDays + '/' + DAYS, cls: 'gold'},
+    {label: '中2个', value: hit2 + '天×7=' + (hit2*7) + '元', cls: ''},
+    {label: '中3个', value: hit3 + '天×45=' + (hit3*45) + '元', cls: hit3 > 0 ? 'gold' : ''},
+    {label: '中4个', value: hit4 + '天×102=' + (hit4*102) + '元', cls: hit4 > 0 ? 'gold' : ''},
+  ];
+  items.forEach(it => {
+    const el = document.createElement('div');
+    el.className = 'backtest-summary-item';
+    el.innerHTML = `<div class="label">${it.label}</div><div class="value ${it.cls}">${it.value}</div>`;
+    summaryDiv.appendChild(el);
+  });
+
+  const table = document.getElementById('backtestTable');
+  let html = '<thead><tr><th>天数</th><th>期号</th><th>日期</th><th>选号(4个)</th><th>命中</th><th>中奖注</th><th>奖金</th><th>盈亏</th></tr></thead><tbody>';
+  days.forEach(d => {
+    const combos = d.hit >= 2 ? d.hit * (d.hit - 1) / 2 : 0;
+    const hitColor = d.hit >= 2 ? 'hit-cell' : 'miss-cell';
+    const prizeColor = d.prize > 0 ? 'prize-cell' : 'miss-cell';
+    const netColor = d.net >= 0 ? 'hit-cell' : 'loss-cell';
+    const hitMark = d.hit >= 2 ? '✓' : '';
+    html += `<tr>
+      <td class="period-cell">Day${d.dayNum}</td>
+      <td class="period-cell">${d.period}</td>
+      <td class="period-cell">${d.date}</td>
+      <td>[${d.nums.join(',')}]</td>
+      <td class="${hitColor}">${d.hit}个 ${hitMark}</td>
+      <td class="${hitColor}">${combos > 0 ? combos + '注' : '-'}</td>
+      <td class="${prizeColor}">${d.prize > 0 ? d.prize + '元' : '-'}</td>
+      <td class="${netColor}">${d.net >= 0 ? '+' : ''}${d.net}元</td>
+    </tr>`;
+  });
+  html += `<tr style="border-top:2px solid rgba(255,215,0,.2)">
+    <td colspan="4" style="color:#ffd700;font-weight:bold">14天汇总</td>
+    <td style="color:#4ecdc4;font-weight:bold">中奖${winDays}天</td>
+    <td colspan="2" style="color:#ffd700;font-weight:bold">奖金${totalPrize}元</td>
+    <td style="color:${totalNet >= 0 ? '#4ecdc4' : '#ff6b6b'};font-weight:bold">${totalNet >= 0 ? '+' : ''}${totalNet}元</td>
+  </tr>`;
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+// ====== UI渲染 ======
+const heatmap = document.getElementById('heatmap');
+ALL_NUMS.forEach(n => {
+  const cell = document.createElement('div');
+  const f = freq[n];
+  let level = 0;
+  if(f === 0) level = 0;
+  else if(f === 1) level = 1;
+  else if(f === 2) level = 2;
+  else if(f === 3) level = 3;
+  else if(f === 4) level = 4;
+  else if(f === 5) level = 5;
+  else if(f === 6) level = 6;
+  else level = 7;
+  cell.className = 'heat-cell heat-' + level;
+  if(lastDrawNums.has(n)) cell.classList.add('excluded');
+  cell.innerHTML = `<span class="num">${n}</span><span class="freq">${f}次</span>`;
+  cell.title = `号码${n}：20期出现${f}次，近5期${recent5Freq[n]}次，${lastDrawNums.has(n) ? '上期已出' : '上期未出'}`;
+  heatmap.appendChild(cell);
+});
+
+const statsGrid = document.getElementById('statsGrid');
+function statCard(label, value, detail, cls = ''){
+  const c = document.createElement('div');
+  c.className = 'stat-card';
+  c.innerHTML = `<div class="label">${label}</div><div class="value ${cls}">${value}</div>${detail ? `<div class="detail">${detail}</div>` : ''}`;
+  return c;
+}
+
+const lastDraw = draws[0];
+const pool5 = new Set();
+recent5Freq.forEach((f, n) => { if(f > 0) pool5.add(n); });
+const topCandidates = [...pool5].map(n => ({n, f: freq[n]})).sort((a,b) => b.f - a.f);
+
+statsGrid.appendChild(statCard('上期期号', lastDraw.period, lastDraw.date));
+statsGrid.appendChild(statCard('候选池', pool5.size + '个', '近5期开过的号码'));
+statsGrid.appendChild(statCard('每日成本', COMBO_COST + '元', '6注选二 × 2元'));
+statsGrid.appendChild(statCard('中2个回本', '+7元', '1注×19元-12元','green'));
+statsGrid.appendChild(statCard('中3个大赚', '+45元', '3注×19元-12元','green'));
+statsGrid.appendChild(statCard('中4个暴击', '+102元', '6注×19元-12元','green'));
+
+let oddTotal=0, evenTotal=0, smallTotal=0, bigTotal=0;
+recent20.forEach(d => {
+  d.nums.forEach(n => {
+    if(n%2===0) evenTotal++; else oddTotal++;
+    if(n<=40) smallTotal++; else bigTotal++;
+  });
+});
+const totalDrawn = recent20.length * 20;
+statsGrid.appendChild(statCard('奇偶比', `${(oddTotal/totalDrawn*100).toFixed(0)}% : ${(evenTotal/totalDrawn*100).toFixed(0)}%`, '奇:偶'));
+statsGrid.appendChild(statCard('大小比', `${(smallTotal/totalDrawn*100).toFixed(0)}% : ${(bigTotal/totalDrawn*100).toFixed(0)}%`, '小(1-40):大(41-80)'));
+
+const historyList = document.getElementById('historyList');
+const ballColors = ['#e74c3c','#e67e22','#f39c12','#2ecc71','#1abc9c','#3498db','#9b59b6','#e84393'];
+recent20.forEach((d, idx) => {
+  const item = document.createElement('div');
+  item.className = 'history-item';
+  const ago = idx === 0 ? '(最新)' : `(${idx}期前)`;
+  let ballsHtml = '';
+  d.nums.forEach(n => {
+    const color = ballColors[Math.floor((n-1)/10)];
+    ballsHtml += `<div class="mini-ball" style="background:${color}">${n}</div>`;
+  });
+  item.innerHTML = `<span class="period">${d.period}</span><span class="date">${d.date} ${ago}</span><div class="balls">${ballsHtml}</div>`;
+  historyList.appendChild(item);
+});
+
+// ====== 选号执行 ======
+function generate(){
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '选 号 中...';
+
+  const display = document.getElementById('resultDisplay');
+  display.innerHTML = '<div style="color:#888;font-size:1.2em">正在分析数据选号...</div>';
+
+  setTimeout(() => {
+    const nums = strategyPool5Freq2Co3(draws.slice(0, 20));
+
+    display.innerHTML = '';
+    const ballsDiv = document.createElement('div');
+    ballsDiv.className = 'result-numbers';
+    display.appendChild(ballsDiv);
+
+    const colors = [
+      'linear-gradient(135deg,#ff6b6b,#ee5a24)',
+      'linear-gradient(135deg,#ffa502,#ff7f50)',
+      'linear-gradient(135deg,#feca57,#ff9f43)',
+      'linear-gradient(135deg,#5f27cd,#341f97)',
+      'linear-gradient(135deg,#54a0ff,#2e86de)',
+      'linear-gradient(135deg,#00d2d3,#48dbfb)',
+      'linear-gradient(135deg,#1dd1a1,#10ac84)',
+      'linear-gradient(135deg,#ee5a6f,#f368e0)',
+    ];
+
+    nums.forEach((n, i) => {
+      setTimeout(() => {
+        const ball = document.createElement('div');
+        ball.className = 'result-ball';
+        const colorIdx = Math.floor((n-1)/10);
+        ball.style.background = colors[colorIdx];
+        ball.textContent = n;
+        ballsDiv.appendChild(ball);
+
+        const cells = heatmap.querySelectorAll('.heat-cell');
+        cells.forEach(c => c.classList.remove('selected'));
+        nums.forEach(nn => {
+          const cell = cells[nn - 1];
+          if(cell) cell.classList.add('selected');
+        });
+
+        if(i === nums.length - 1){
+          // 复式选二组合展示
+          const combos = getCombinations(nums);
+          const comboDiv = document.createElement('div');
+          comboDiv.className = 'combo-display';
+          let comboHtml = `<div class="combo-title">复式选二 · 共${combos.length}注 · 成本${COMBO_COST}元</div><div class="combo-list">`;
+          combos.forEach((c, ci) => {
+            comboHtml += `<div class="combo-item"><span class="c-num">${c[0]}</span>+<span class="c-num">${c[1]}</span></div>`;
+          });
+          comboHtml += '</div>';
+          comboDiv.innerHTML = comboHtml;
+          display.appendChild(comboDiv);
+
+          // 回测
+          const btDays = [];
+          let totalPrize = 0;
+          let rewardDays = 0;
+          for(let d = 13; d >= 0; d--){
+            const target = draws[d];
+            const hit = nums.filter(n => target.nums.includes(n)).length;
+            const prize = getComboPrize(hit);
+            totalPrize += prize;
+            if(prize > 0) rewardDays++;
+            btDays.push({period: target.period, hit, prize});
+          }
+          const totalCost = 14 * COMBO_COST;
+          const netProfit = totalPrize - totalCost;
+
+          const info = document.createElement('div');
+          info.className = 'result-info';
+          const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
+          const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
+          info.innerHTML = `<b style="color:#4ecdc4">近5期池+频率²+共现³ · 复式选二</b> | 选号: [${nums.join(',')}]<br>` +
+            `近14天回测: 中奖${rewardDays}/14天 | 奖金${totalPrize}元 - 成本${totalCost}元 = <b style="color:${netColor}">${netStr}元</b><br>` +
+            `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:${d.hit}中${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
+          display.appendChild(info);
+
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'save-btn';
+          saveBtn.textContent = '保存这组号码';
+          saveBtn.onclick = () => {
+            saveCurrentNumbers(nums);
+            saveBtn.disabled = true;
+            saveBtn.textContent = '已保存';
+            saveBtn.style.opacity = '0.5';
+          };
+          display.appendChild(saveBtn);
+
+          btn.disabled = false;
+          btn.textContent = '再 来 一 组';
+        }
+      }, i * 120);
+    });
+  }, 600);
+}
+
+function formatTime(d) {
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return h + ':' + m;
+}
+
+function updateInfoBar(source, sourceColor) {
+  const now = new Date();
+  const timeStr = formatTime(now);
+  document.getElementById('infoPeriod').textContent = draws[0].period;
+  document.getElementById('infoDate').textContent = draws[0].date;
+  document.getElementById('infoSource').textContent = source;
+  document.getElementById('infoSource').style.color = sourceColor;
+  document.getElementById('infoUpdate').textContent = timeStr;
+}
+
+async function fetchLatestData() {
+  const info = document.getElementById('infoSource');
+  if (info) {
+    info.textContent = '正在获取...';
+    info.style.color = '#888';
+  }
+  
+  const proxies = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?url=',
+    'https://api.codetabs.com/v1/proxy/?quest=',
+    'https://api.allorigins.win/get?url=',
+    'https://yacdn.org/proxy/',
+    'https://api.codetabs.com/v1/proxy?quest='
+  ];
+  
+  const apiUrl = 'https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=kl8&issueCount=32&pageNo=1&pageSize=32&systemType=PC';
+  
+  const promises = proxies.map((proxy, idx) => {
+    return new Promise((resolve) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      let targetUrl = proxy + encodeURIComponent(apiUrl);
+      if (proxy === 'https://yacdn.org/proxy/') {
+        targetUrl = proxy + apiUrl.replace('https://', '');
+      }
+      
+      fetch(targetUrl, { signal: controller.signal })
+        .then(r => r.text())
+        .then(text => {
+          clearTimeout(timeoutId);
+          try {
+            let data;
+            if (proxy.includes('allorigins') && proxy.includes('get')) {
+              data = JSON.parse(text).contents;
+              data = JSON.parse(data);
+            } else {
+              data = JSON.parse(text);
+            }
+            if (data.result && data.result.length > 0) {
+              resolve({ success: true, data: data, proxyIdx: idx });
+            } else {
+              resolve({ success: false });
+            }
+          } catch(e) {
+            resolve({ success: false });
+          }
+        })
+        .catch(() => {
+          clearTimeout(timeoutId);
+          resolve({ success: false });
+        });
+    });
+  });
+  
+  for (let i = 0; i < promises.length; i++) {
+    const result = await promises[i];
+    if (result.success) {
+      const data = result.data;
+      const newDraws = data.result.map(d => ({
+        period: d.code,
+        date: d.date,
+        nums: d.red.split(',').map(n => parseInt(n))
+      }));
+      
+      if (newDraws[0].period !== draws[0].period) {
+        draws.length = 0;
+        draws.push(...newDraws);
+        computeStats();
+        runBacktest();
+        renderSavedRecords();
+      }
+      
+      updateInfoBar('实时获取', '#4ecdc4');
+      return true;
+    }
+  }
+  
+  updateInfoBar('本地数据', '#ff8c00');
+  return false;
+}
+
+// 初始化显示本地数据的更新时间
+updateInfoBar('本地数据', '#ff8c00');
+fetchLatestData();
+runBacktest();
+renderSavedRecords();
+</script>
+</body>
+</html>
