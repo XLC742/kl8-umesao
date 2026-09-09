@@ -2,8 +2,8 @@ name: Update KL8 Data
 
 on:
   schedule:
-    - cron: '30 13 * * *'
-    - cron: '0 14 * * *'
+    - cron: '40 13 * * *'
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 permissions:
