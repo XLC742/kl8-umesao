@@ -1,70 +1,79 @@
 const https = require('https');
 const fs = require('fs');
 
-const API_PATH = '/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=kl8&issueCount=32&pageNo=1&pageSize=32&systemType=PC';
+const API_ID = '10020843';
+const API_KEY = '9ef99297f8226eb6bb82cf2d336972ab';
+const API_URL = 'https://cn.apihz.cn/api/caipiao/kuaile8.php';
+const COUNT = 32;
 
-function fetchData() {
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'www.cwl.gov.cn',
-      path: API_PATH,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://www.cwl.gov.cn/ygkj/wqkjgg/kl8/',
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      timeout: 30000
-    };
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-    const req = https.get(options, res => {
+function fetchOne(qihao) {
+  const params = `?id=${API_ID}&key=${API_KEY}` + (qihao ? `&qh=${qihao}` : '');
+  const url = API_URL + params;
+  return new Promise((resolve) => {
+    https.get(url, { timeout: 15000 }, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
           const json = JSON.parse(data);
-          if (json.result && json.result.length > 0) {
-            resolve(json.result);
-          } else {
-            reject(new Error('No results: ' + data.substring(0, 100)));
-          }
-        } catch(e) {
-          reject(new Error('Parse failed: ' + data.substring(0, 100)));
-        }
+          if (json.code === 200) resolve(json);
+          else resolve(null);
+        } catch(e) { resolve(null); }
       });
-    });
-
-    req.on('error', e => reject(e));
-    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    }).on('error', () => resolve(null));
   });
 }
 
-async function main() {
-  let results = null;
+function prevQihao(qihao) {
+  const year = parseInt(qihao.substring(0, 4));
+  let num = parseInt(qihao.substring(4));
+  num--;
+  if (num <= 0) return null;
+  return year + String(num).padStart(3, '0');
+}
 
-  for (let i = 0; i < 3; i++) {
-    try {
-      console.log('Attempt ' + (i + 1) + '...');
-      results = await fetchData();
-      console.log('Success! Latest:', results[0].code, results[0].date);
-      break;
-    } catch(e) {
-      console.log('Attempt ' + (i + 1) + ' failed:', e.message);
-      if (i < 2) await new Promise(r => setTimeout(r, 3000));
+async function main() {
+  console.log('Fetching latest period...');
+  const latest = await fetchOne(null);
+  if (!latest) {
+    console.log('ERROR: Cannot fetch latest');
+    process.exit(1);
+  }
+  console.log('Latest:', latest.qihao, latest.time);
+
+  const draws = [{
+    period: latest.qihao,
+    date: latest.time,
+    nums: latest.number.split('|').map(n => parseInt(n))
+  }];
+
+  let qihao = latest.qihao;
+  for (let i = 1; i < COUNT; i++) {
+    qihao = prevQihao(qihao);
+    if (!qihao) break;
+
+    // 每10次等7秒（避免超过频率限制10次/分钟）
+    if (i % 10 === 0) {
+      console.log(`Rate limit wait after ${i}...`);
+      await sleep(7000);
+    }
+
+    const r = await fetchOne(qihao);
+    if (r) {
+      draws.push({
+        period: r.qihao,
+        date: r.time,
+        nums: r.number.split('|').map(n => parseInt(n))
+      });
+      if (i % 5 === 0) console.log(`Got ${i}/${COUNT - 1}:`, r.qihao);
+    } else {
+      console.log('Missing period:', qihao);
     }
   }
 
-  if (!results) {
-    console.log('ERROR: All attempts failed');
-    process.exit(1);
-  }
-
-  const draws = results.map(d => ({
-    period: d.code,
-    date: d.date,
-    nums: d.red.split(',').map(n => parseInt(n))
-  }));
+  console.log(`Total fetched: ${draws.length}`);
 
   const htmlPath = 'index.html';
   let html = fs.readFileSync(htmlPath, 'utf8');
