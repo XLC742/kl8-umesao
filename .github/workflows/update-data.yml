@@ -2,7 +2,6 @@ name: Update KL8 Data
 
 on:
   schedule:
-    # 每天北京时间 21:30 和 22:00 自动更新
     - cron: '30 13 * * *'
     - cron: '0 14 * * *'
   workflow_dispatch:
@@ -10,6 +9,7 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
