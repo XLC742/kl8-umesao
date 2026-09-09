@@ -767,15 +767,14 @@ async function manualRefresh() {
 
 async function fetchFromGitHub() {
   try {
-    const url = 'https://raw.githubusercontent.com/XLC742/kl8-umesao/main/index.html?v=' + Date.now();
-    const resp = await fetch(url, { cache: 'no-store' });
-    const text = await resp.text();
+    const resp = await fetch('data.json?v=' + Date.now(), { cache: 'no-store' });
+    const data = await resp.json();
+    const newDraws = data.draws;
 
-    const drawsMatch = text.match(/const draws = \[([\s\S]*?)\];/);
-    if (!drawsMatch) return false;
-
-    const newDraws = eval('[' + drawsMatch[1] + ']');
-    if (!newDraws || newDraws.length === 0) return false;
+    if (!newDraws || newDraws.length === 0) {
+      updateInfoBar('更新失败', '#ff6b6b');
+      return false;
+    }
 
     if (newDraws[0].period === draws[0].period) {
       updateInfoBar('已是最新', '#4ecdc4');
@@ -817,7 +816,7 @@ async function fetchFromGitHub() {
       else if (f === 6) level = 6;
       else level = 7;
       cell.className = 'heat-cell heat-' + level;
-      if (lastDrawNums.has(n)) cell.classList.add('excluded');
+      if (draws[0].nums.includes(n)) cell.classList.add('excluded');
       cell.querySelector('.freq').textContent = f + '次';
     });
 
