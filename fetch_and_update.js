@@ -1,66 +1,96 @@
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 
-const API_PATH = '/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=kl8&issueCount=32&pageNo=1&pageSize=32&systemType=PC';
+// 使用多个数据源，避免单一源被拦截
+const SOURCES = [
+  {
+    name: 'cwl-direct',
+    hostname: 'www.cwl.gov.cn',
+    path: '/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=kl8&issueCount=32&pageNo=1&pageSize=32&systemType=PC',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://www.cwl.gov.cn/ygkj/wqkjgg/kl8/',
+      'Accept': 'application/json, text/javascript, */*; q=0.01',
+      'Accept-Language': 'zh-CN,zh;q=0.9',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    parse: (data) => JSON.parse(data).result
+  },
+  {
+    name: 'cwl-corsproxy',
+    hostname: 'corsproxy.io',
+    path: '/?url=https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=kl8%26issueCount=32%26pageNo=1%26pageSize=32%26systemType=PC',
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    parse: (data) => JSON.parse(data).result
+  },
+  {
+    name: 'cwl-allorigins',
+    hostname: 'api.allorigins.win',
+    path: '/raw?url=' + encodeURIComponent('https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=kl8&issueCount=32&pageNo=1&pageSize=32&systemType=PC'),
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    parse: (data) => JSON.parse(data).result
+  }
+];
 
-function fetchData() {
+function fetchFromSource(source) {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: 'www.cwl.gov.cn',
-      path: API_PATH,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://www.cwl.gov.cn/ygkj/wqkjgg/kl8/',
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      timeout: 30000
+      hostname: source.hostname,
+      path: source.path,
+      headers: source.headers || {},
+      timeout: 20000
     };
 
-    const req = https.get(options, res => {
+    const client = source.hostname.startsWith('https') ? https : (source.hostname.includes('http://') ? http : https);
+    if (source.hostname.startsWith('http://')) {
+      const url = new URL(source.hostname + source.path);
+      options.hostname = url.hostname;
+      options.path = url.pathname + url.search;
+    }
+
+    const req = client.get(options, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
-          const json = JSON.parse(data);
-          if (json.result && json.result.length > 0) {
-            resolve(json.result);
+          const results = source.parse(data);
+          if (results && results.length > 0) {
+            resolve(results);
           } else {
-            reject(new Error('No results in response: ' + data.substring(0, 100)));
+            reject(new Error('No results'));
           }
         } catch(e) {
-          reject(new Error('JSON parse failed: ' + data.substring(0, 100)));
+          reject(new Error('Parse failed: ' + data.substring(0, 80)));
         }
       });
     });
 
     req.on('error', e => reject(e));
-    req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
   });
 }
 
 async function main() {
   let results = null;
-  
-  // 最多重试5次，每次间隔3秒
-  for (let i = 0; i < 5; i++) {
-    try {
-      console.log(`Attempt ${i + 1}...`);
-      results = await fetchData();
-      console.log('Success! Latest period:', results[0].code, results[0].date);
-      break;
-    } catch(e) {
-      console.log(`Attempt ${i + 1} failed:`, e.message);
-      if (i < 4) {
-        console.log('Waiting 3 seconds before retry...');
-        await new Promise(r => setTimeout(r, 3000));
+
+  for (const source of SOURCES) {
+    for (let i = 0; i < 2; i++) {
+      try {
+        console.log(`Trying ${source.name} (attempt ${i + 1})...`);
+        results = await fetchFromSource(source);
+        console.log(`Success with ${source.name}! Latest:`, results[0].code, results[0].date);
+        break;
+      } catch(e) {
+        console.log(`${source.name} failed:`, e.message);
+        if (i < 1) await new Promise(r => setTimeout(r, 2000));
       }
     }
+    if (results) break;
   }
 
   if (!results) {
-    console.log('ERROR: All attempts failed');
+    console.log('ERROR: All sources failed');
     process.exit(1);
   }
 
