@@ -759,7 +759,7 @@ function generate(){
           const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
           info.innerHTML = `<b style="color:#4ecdc4">近5期池+频率²+共现³ · 复式选二</b> | 选号: [${nums.join(',')}]<br>` +
             `近14天回测: 中奖${rewardDays}/14天 | 奖金${totalPrize}元 - 成本${totalCost}元 = <b style="color:${netColor}">${netStr}元</b><br>` +
-            `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:${d.hit}中${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
+            `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:中${d.hit}个${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
           display.appendChild(info);
 
           const saveBtn = document.createElement('button');
@@ -934,7 +934,7 @@ function generate9(){
           const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
           info.innerHTML = `<b style="color:#e84393">九选二 · 36注复式</b> | 选号: [${nums.join(',')}]<br>` +
             `近14天回测: 中奖${rewardDays}/14天 | 奖金${totalPrize}元 - 成本${totalCost}元 = <b style="color:${netColor}">${netStr}元</b><br>` +
-            `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:${d.hit}中${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
+            `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:中${d.hit}个${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
           display.appendChild(info);
           const saveBtn = document.createElement('button');
           saveBtn.className = 'save-btn';
