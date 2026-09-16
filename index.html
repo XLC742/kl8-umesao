@@ -215,6 +215,32 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
     <div class="history-list" id="historyList"></div>
   </div>
 
+  <div class="panel" style="border:1px solid rgba(232,67,147,.2)">
+    <div class="panel-title" style="color:#e84393">九选二 · 36注复式<span class="badge" style="background:rgba(232,67,147,.15);color:#e84393;border-color:rgba(232,67,147,.3)">每日成本72元</span></div>
+    <div class="strategy-desc">
+      <b>九选二玩法</b>：选9个号码，系统自动生成C(9,2)=36注选二，每注2元，每日成本<b>72元</b>。
+      <br><b>奖金规则</b>：选二中2个奖19元。中4个即回本（114元），中5个赚118元。
+    </div>
+    <div class="generate-area">
+      <button class="generate-btn" id="generate9Btn" onclick="generate9()" style="background:linear-gradient(135deg,#e84393,#fd79a8);box-shadow:0 6px 25px rgba(232,67,147,.3)">九 选 二 选 号</button>
+    </div>
+  </div>
+
+  <div class="panel" style="border:1px solid rgba(232,67,147,.15)">
+    <div class="panel-title" style="color:#e84393">九选二结果</div>
+    <div class="result-display" id="result9Display">
+      <div class="empty-state">点击上方按钮开始选号</div>
+    </div>
+  </div>
+
+  <div class="panel" style="border:1px solid rgba(232,67,147,.15)">
+    <div class="panel-title" style="color:#e84393">九选二保存记录<span class="badge" id="saved9Badge" style="background:rgba(232,67,147,.15);color:#e84393;border-color:rgba(232,67,147,.3)">最多10条</span></div>
+    <div class="saved-summary" id="saved9Summary"></div>
+    <div class="saved-list" id="saved9List">
+      <div class="empty-state" style="padding:16px;font-size:.9em;color:#555">还没有保存记录，选号后点击"保存这组号码"</div>
+    </div>
+  </div>
+
   <div class="disclaimer">
     本系统仅基于历史数据统计分析，彩票开奖为随机事件，任何分析都不能保证中奖。请理性购彩，量力而行。<br>
     数据仅供参考娱乐，不构成任何投注建议。
@@ -755,6 +781,230 @@ function generate(){
   }, 600);
 }
 
+// ====== 九选二 ======
+const PICK9 = 9;
+const COMBO9_COST = 72; // C(9,2)=36注 × 2元
+const STORAGE9_KEY = 'kl8_saved_records_9';
+const MAX9_RECORDS = 10;
+
+function getCombo9Prize(hit){
+  if(hit < 2) return 0;
+  return (hit * (hit - 1) / 2) * PRIZE_PER_HIT;
+}
+
+function loadSaved9Records(){
+  try {
+    const raw = localStorage.getItem(STORAGE9_KEY);
+    if(!raw) return [];
+    return JSON.parse(raw);
+  } catch(e) { return []; }
+}
+
+function saveSaved9Records(records){
+  localStorage.setItem(STORAGE9_KEY, JSON.stringify(records));
+}
+
+function checkSaved9RecordHit(record, allDraws){
+  const draw = allDraws.find(d => d.period === record.targetPeriod);
+  if(!draw) return {status: 'pending', hit: 0, prize: 0, combos: 0};
+  const hit = record.nums.filter(n => draw.nums.includes(n)).length;
+  const prize = getCombo9Prize(hit);
+  const combos = hit >= 2 ? hit * (hit - 1) / 2 : 0;
+  if(prize > 0) return {status: 'win', hit, prize, combos};
+  return {status: 'miss', hit, prize: 0, combos: 0};
+}
+
+function saveCurrent9Numbers(nums){
+  const records = loadSaved9Records();
+  if(records.length >= MAX9_RECORDS) records.shift();
+  const latestPeriod = draws[0].period;
+  const nextPeriod = String(parseInt(latestPeriod) + 1);
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const savedDate = `${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  records.push({nums: [...nums], targetPeriod: nextPeriod, savedDate, status: 'pending', hit: 0, prize: 0});
+  saveSaved9Records(records);
+  renderSaved9Records();
+}
+
+function delete9Record(idx){
+  const records = loadSaved9Records();
+  records.splice(idx, 1);
+  saveSaved9Records(records);
+  renderSaved9Records();
+}
+
+function renderSaved9Records(){
+  const records = loadSaved9Records();
+  const list = document.getElementById('saved9List');
+  const summary = document.getElementById('saved9Summary');
+  if(records.length === 0){
+    list.innerHTML = '<div class="empty-state" style="padding:16px;font-size:.9em;color:#555">还没有保存记录，选号后点击"保存这组号码"</div>';
+    summary.innerHTML = '';
+    document.getElementById('saved9Badge').textContent = '最多10条';
+    return;
+  }
+  document.getElementById('saved9Badge').textContent = `${records.length}/10`;
+  let totalCost = records.length * COMBO9_COST;
+  let totalPrize = 0, winCount = 0, pendingCount = 0, missCount = 0;
+  const ballColors9 = ['#e74c3c','#2ecc71','#e67e22','#1abc9c','#f39c12','#9b59b6','#3498db','#e84393'];
+  let html = '';
+  records.forEach((r, idx) => {
+    const result = checkSaved9RecordHit(r, draws);
+    r.status = result.status; r.hit = result.hit; r.prize = result.prize;
+    if(result.status === 'win'){ totalPrize += result.prize; winCount++; }
+    else if(result.status === 'pending') pendingCount++;
+    else missCount++;
+    let statusHtml = '';
+    if(result.status === 'pending') statusHtml = '<span class="status-pending">待开奖</span>';
+    else if(result.status === 'win') statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元</span>`;
+    else statusHtml = `<span class="status-miss">中${result.hit}个<br>未中奖</span>`;
+    let ballsHtml = '';
+    r.nums.forEach(n => {
+      const color = ballColors9[Math.min(Math.floor(n/10), 7)];
+      ballsHtml += `<div class="saved-ball" style="background:${color}">${n}</div>`;
+    });
+    html += `<div class="saved-item"><span class="saved-period">${r.targetPeriod}</span><span class="saved-date">${r.savedDate}</span><div class="saved-balls">${ballsHtml}</div><span class="saved-status">${statusHtml}</span><button class="delete-btn" onclick="delete9Record(${idx})" title="删除">&times;</button></div>`;
+  });
+  list.innerHTML = html;
+  const netProfit = totalPrize - totalCost;
+  const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
+  const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
+  summary.innerHTML = `<span>保存: <b>${records.length}</b>组</span><span>成本: <b>${totalCost}</b>元</span><span>奖金: <b>${totalPrize}</b>元</span><span>净收益: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span>`;
+  saveSaved9Records(records);
+}
+
+function generate9(){
+  const btn = document.getElementById('generate9Btn');
+  btn.disabled = true;
+  btn.textContent = '选 号 中...';
+  const display = document.getElementById('result9Display');
+  display.innerHTML = '<div style="color:#888;font-size:1.2em">正在分析数据选号...</div>';
+  setTimeout(() => {
+    const nums = strategyPool5Freq2Co2Spread9(draws.slice(0, 20));
+    display.innerHTML = '';
+    const ballsDiv = document.createElement('div');
+    ballsDiv.className = 'result-numbers';
+    display.appendChild(ballsDiv);
+    const colors = [
+      'linear-gradient(135deg,#ff6b6b,#ee5a24)',
+      'linear-gradient(135deg,#2ecc71,#27ae60)',
+      'linear-gradient(135deg,#e67e22,#d35400)',
+      'linear-gradient(135deg,#1abc9c,#16a085)',
+      'linear-gradient(135deg,#feca57,#ff9f43)',
+      'linear-gradient(135deg,#9b59b6,#8e44ad)',
+      'linear-gradient(135deg,#54a0ff,#2e86de)',
+      'linear-gradient(135deg,#ee5a6f,#f368e0)',
+    ];
+    nums.forEach((n, i) => {
+      setTimeout(() => {
+        const ball = document.createElement('div');
+        ball.className = 'result-ball';
+        ball.style.background = colors[Math.min(Math.floor(n/10), 7)];
+        ball.style.width = '44px'; ball.style.height = '44px'; ball.style.fontSize = '1.1em';
+        ball.textContent = n;
+        ballsDiv.appendChild(ball);
+        if(i === nums.length - 1){
+          const combos = getCombinations(nums);
+          const comboDiv = document.createElement('div');
+          comboDiv.className = 'combo-display';
+          let comboHtml = `<div class="combo-title">九选二 · 共${combos.length}注 · 成本${COMBO9_COST}元</div><div class="combo-list" style="max-height:120px;overflow-y:auto">`;
+          combos.forEach((c) => {
+            comboHtml += `<div class="combo-item"><span class="c-num">${c[0]}</span>+<span class="c-num">${c[1]}</span></div>`;
+          });
+          comboHtml += '</div>';
+          comboDiv.innerHTML = comboHtml;
+          display.appendChild(comboDiv);
+          // 近14天回测
+          const btDays = [];
+          let totalPrize = 0, rewardDays = 0;
+          for(let d = 13; d >= 0; d--){
+            const target = draws[d];
+            const hit = nums.filter(n => target.nums.includes(n)).length;
+            const prize = getCombo9Prize(hit);
+            totalPrize += prize;
+            if(prize > 0) rewardDays++;
+            btDays.push({period: target.period, hit, prize});
+          }
+          const totalCost = 14 * COMBO9_COST;
+          const netProfit = totalPrize - totalCost;
+          const info = document.createElement('div');
+          info.className = 'result-info';
+          const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
+          const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
+          info.innerHTML = `<b style="color:#e84393">九选二 · 36注复式</b> | 选号: [${nums.join(',')}]<br>` +
+            `近14天回测: 中奖${rewardDays}/14天 | 奖金${totalPrize}元 - 成本${totalCost}元 = <b style="color:${netColor}">${netStr}元</b><br>` +
+            `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:${d.hit}中${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
+          display.appendChild(info);
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'save-btn';
+          saveBtn.textContent = '保存这组号码';
+          saveBtn.onclick = () => {
+            saveCurrent9Numbers(nums);
+            saveBtn.disabled = true;
+            saveBtn.textContent = '已保存';
+            saveBtn.style.opacity = '0.5';
+          };
+          display.appendChild(saveBtn);
+          btn.disabled = false;
+          btn.textContent = '再 来 一 组';
+        }
+      }, i * 80);
+    });
+  }, 600);
+}
+
+// 九选二策略（选9个号码）
+function strategyPool5Freq2Co2Spread9(history){
+  const pool = new Set();
+  history.slice(0, 5).forEach(d => d.nums.forEach(n => pool.add(n)));
+  let candidates = [...pool];
+  if(candidates.length < PICK9) candidates = [...ALL_NUMS];
+  const btFreq = new Array(81).fill(0);
+  history.slice(0, 14).forEach(d => d.nums.forEach(n => btFreq[n]++));
+  const co = {};
+  history.slice(0, 5).forEach(d => {
+    const nums = d.nums;
+    for(let i = 0; i < nums.length; i++){
+      for(let j = i + 1; j < nums.length; j++){
+        const a = nums[i], b = nums[j];
+        co[a + '-' + b] = (co[a + '-' + b] || 0) + 1;
+        co[b + '-' + a] = (co[b + '-' + a] || 0) + 1;
+      }
+    }
+  });
+  const fw = candidates.map(n => Math.pow(btFreq[n] + 0.5, 2));
+  const sel = [], rem = [...candidates], rw = [...fw];
+  while(sel.length < PICK9 && rem.length > 0){
+    let idx;
+    if(sel.length === 0){
+      const t = rw.reduce((a, b) => a + b, 0);
+      let r = Math.random() * t;
+      idx = 0;
+      for(let j = 0; j < rem.length; j++){ r -= rw[j]; if(r <= 0){ idx = j; break; } idx = j; }
+    } else {
+      const fw2 = rem.map((n, i) => {
+        const m = Math.max(...sel.map(sn => co[n + '-' + sn] || 0));
+        let zonePenalty = 1;
+        sel.forEach(sn => {
+          if(Math.floor(n / 10) === Math.floor(sn / 10)) zonePenalty *= 0.5;
+        });
+        return rw[i] * (1 + m * m) * zonePenalty;
+      });
+      const t = fw2.reduce((a, b) => a + b, 0);
+      let r = Math.random() * t;
+      idx = 0;
+      for(let j = 0; j < rem.length; j++){ r -= fw2[j]; if(r <= 0){ idx = j; break; } idx = j; }
+    }
+    sel.push(rem[idx]);
+    rem.splice(idx, 1);
+    rw.splice(idx, 1);
+  }
+  return sel.sort((a, b) => a - b);
+}
+
+renderSaved9Records();
+
 function formatTime(d) {
   const h = String(d.getHours()).padStart(2, '0');
   const m = String(d.getMinutes()).padStart(2, '0');
@@ -857,6 +1107,7 @@ async function fetchFromGitHub() {
 
     runBacktest();
     renderSavedRecords();
+    renderSaved9Records();
     updateInfoBar('已更新', '#4ecdc4');
     return true;
   } catch(e) {
