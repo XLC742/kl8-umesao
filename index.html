@@ -75,14 +75,22 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 .heat-cell:hover{transform:scale(1.15);z-index:10}
 .heat-cell.excluded{opacity:.3;border:1px dashed #555}
 .heat-cell.selected{border:2px solid #ffd700;box-shadow:0 0 10px rgba(255,215,0,.5)}
-.heat-0{background:rgba(60,60,80,.4);color:#666}
-.heat-1{background:rgba(78,205,196,.15);color:#4ecdc4}
-.heat-2{background:rgba(78,205,196,.3);color:#4ecdc4}
-.heat-3{background:rgba(255,215,0,.25);color:#ffd700}
-.heat-4{background:rgba(255,140,0,.4);color:#ff8c00}
-.heat-5{background:rgba(255,69,58,.5);color:#ff453a}
-.heat-6{background:rgba(255,69,58,.7);color:#fff}
-.heat-7{background:rgba(255,69,58,.9);color:#fff}
+.zone-0{--zc:231,76,60}
+.zone-1{--zc:230,126,34}
+.zone-2{--zc:243,156,18}
+.zone-3{--zc:46,204,113}
+.zone-4{--zc:26,188,156}
+.zone-5{--zc:52,152,219}
+.zone-6{--zc:155,89,182}
+.zone-7{--zc:232,67,147}
+.freq-0{background:rgba(var(--zc),.08);color:rgba(var(--zc),.5)}
+.freq-1{background:rgba(var(--zc),.2);color:rgba(var(--zc),1)}
+.freq-2{background:rgba(var(--zc),.35);color:rgba(var(--zc),1)}
+.freq-3{background:rgba(var(--zc),.5);color:#fff}
+.freq-4{background:rgba(var(--zc),.65);color:#fff}
+.freq-5{background:rgba(var(--zc),.8);color:#fff}
+.freq-6{background:rgba(var(--zc),.9);color:#fff}
+.freq-7{background:rgba(var(--zc),1);color:#fff}
 .history-list{max-height:400px;overflow-y:auto;border-radius:8px}
 .history-list::-webkit-scrollbar{width:6px}
 .history-list::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}
@@ -123,8 +131,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
   </div>
 
   <div class="data-info" id="dataInfo">
-    <span>最新期号: <b id="infoPeriod">2026248</b></span>
-    <span>开奖日期: <b id="infoDate">2026-09-15(二)</b></span>
+    <span>最新期号: <b id="infoPeriod">2026241</b></span>
+    <span>开奖日期: <b id="infoDate">2026-09-08(二)</b></span>
     <span>数据来源: <b id="infoSource" style="color:#ff8c00">本地数据</b></span>
     <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">更新数据</button>
   </div>
@@ -190,11 +198,14 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
     <div class="panel-title">号码频率热力图（1-80）</div>
     <div class="heatmap" id="heatmap"></div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-color heat-0"></div>未出</div>
-      <div class="legend-item"><div class="legend-color heat-1"></div>1次</div>
-      <div class="legend-item"><div class="legend-color heat-3"></div>3次</div>
-      <div class="legend-item"><div class="legend-color heat-5"></div>5次</div>
-      <div class="legend-item"><div class="legend-color heat-7"></div>7次+</div>
+      <div class="legend-item"><div class="legend-color zone-0 freq-1"></div>1-10 红</div>
+      <div class="legend-item"><div class="legend-color zone-1 freq-1"></div>11-20 橙</div>
+      <div class="legend-item"><div class="legend-color zone-2 freq-1"></div>21-30 黄</div>
+      <div class="legend-item"><div class="legend-color zone-3 freq-1"></div>31-40 绿</div>
+      <div class="legend-item"><div class="legend-color zone-4 freq-1"></div>41-50 青</div>
+      <div class="legend-item"><div class="legend-color zone-5 freq-1"></div>51-60 蓝</div>
+      <div class="legend-item"><div class="legend-color zone-6 freq-1"></div>61-70 紫</div>
+      <div class="legend-item"><div class="legend-color zone-7 freq-1"></div>71-80 粉</div>
       <div class="legend-item"><div class="legend-color" style="background:rgba(255,255,255,.1);border:1px dashed #555"></div>上期已出</div>
     </div>
   </div>
@@ -213,7 +224,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 <script>
 // ====== 近20期开奖数据（来源：中国福彩官方） ======
 const draws = [
-  {period:"2026248",date:"2026-09-15(二)",nums:[3,5,9,15,23,28,31,33,34,35,39,42,48,50,53,70,73,74,76,78]},
+  {period:"2026248",date:"09-15(二)",nums:[3,5,9,15,23,28,31,33,34,35,39,42,48,50,53,70,73,74,76,78]},
   {period:"2026247",date:"09-14(一)",nums:[5,7,19,22,28,29,38,39,41,42,43,44,55,58,61,65,66,71,72,73]},
   {period:"2026246",date:"09-13(日)",nums:[3,8,10,16,18,20,23,29,31,35,51,53,54,56,58,69,70,75,78,80]},
   {period:"2026245",date:"09-12(六)",nums:[5,6,9,15,18,25,26,27,30,31,34,36,39,43,44,48,54,63,65,77]},
@@ -590,7 +601,8 @@ ALL_NUMS.forEach(n => {
   else if(f === 5) level = 5;
   else if(f === 6) level = 6;
   else level = 7;
-  cell.className = 'heat-cell heat-' + level;
+  const zone = Math.floor((n - 1) / 10);
+  cell.className = 'heat-cell zone-' + zone + ' freq-' + level;
   if(lastDrawNums.has(n)) cell.classList.add('excluded');
   cell.innerHTML = `<span class="num">${n}</span><span class="freq">${f}次</span>`;
   cell.title = `号码${n}：20期出现${f}次，近5期${recent5Freq[n]}次，${lastDrawNums.has(n) ? '上期已出' : '上期未出'}`;
@@ -820,7 +832,8 @@ async function fetchFromGitHub() {
       else if (f === 5) level = 5;
       else if (f === 6) level = 6;
       else level = 7;
-      cell.className = 'heat-cell heat-' + level;
+      const zone = Math.floor((n - 1) / 10);
+      cell.className = 'heat-cell zone-' + zone + ' freq-' + level;
       if (draws[0].nums.includes(n)) cell.classList.add('excluded');
       cell.querySelector('.freq').textContent = f + '次';
     });
