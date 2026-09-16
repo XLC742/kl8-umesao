@@ -131,8 +131,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
   </div>
 
   <div class="data-info" id="dataInfo">
-    <span>最新期号: <b id="infoPeriod">2026241</b></span>
-    <span>开奖日期: <b id="infoDate">2026-09-08(二)</b></span>
+    <span>最新期号: <b id="infoPeriod">2026249</b></span>
+    <span>开奖日期: <b id="infoDate">2026-09-16 21:30:00</b></span>
     <span>数据来源: <b id="infoSource" style="color:#ff8c00">本地数据</b></span>
     <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">更新数据</button>
   </div>
@@ -250,6 +250,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 <script>
 // ====== 近20期开奖数据（来源：中国福彩官方） ======
 const draws = [
+  {period:"2026249",date:"2026-09-16 21:30:00",nums:[4,8,10,11,13,26,29,34,41,50,51,52,53,57,59,65,66,73,74,77]},
   {period:"2026248",date:"09-15(二)",nums:[3,5,9,15,23,28,31,33,34,35,39,42,48,50,53,70,73,74,76,78]},
   {period:"2026247",date:"09-14(一)",nums:[5,7,19,22,28,29,38,39,41,42,43,44,55,58,61,65,66,71,72,73]},
   {period:"2026246",date:"09-13(日)",nums:[3,8,10,16,18,20,23,29,31,35,51,53,54,56,58,69,70,75,78,80]},
@@ -280,8 +281,7 @@ const draws = [
   {period:"2026221",date:"08-19(三)",nums:[1,2,3,5,10,18,21,25,28,34,35,41,48,51,54,58,59,60,77,79]},
   {period:"2026220",date:"08-18(二)",nums:[5,6,10,12,17,20,21,23,24,25,33,35,38,39,40,41,43,49,67,71]},
   {period:"2026219",date:"08-17(一)",nums:[2,3,5,6,13,15,20,35,36,39,47,48,51,58,65,67,72,73,79,80]},
-  {period:"2026218",date:"08-16(日)",nums:[3,5,7,11,15,17,18,19,22,24,29,41,43,47,49,50,59,62,78,80]},
-  {period:"2026217",date:"08-15(六)",nums:[7,8,10,11,14,18,20,21,24,28,29,33,41,46,67,68,74,76,77,78]}
+  {period:"2026218",date:"08-16(日)",nums:[3,5,7,11,15,17,18,19,22,24,29,41,43,47,49,50,59,62,78,80]}
 ];
 
 const ALL_NUMS = Array.from({length:80},(_,i)=>i+1);
