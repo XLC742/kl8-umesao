@@ -142,7 +142,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
     <div class="strategy-desc">
       <b>复式选二玩法</b>：选4个号码，系统自动生成C(4,2)=6注选二，每注2元，每日成本<b>12元</b>。
       <br><br>
-      <b>奖金规则</b>：选二中2个奖<b>19元</b>。
+      <b>奖金规则</b>：选二中2个奖<b>25元</b>（19元+派奖6元）。
       <table style="margin-top:8px;width:100%;font-size:.9em;border-collapse:collapse">
         <tr style="border-bottom:1px solid rgba(255,255,255,.1)">
           <th style="text-align:left;padding:4px;color:#888">4个号码中</th>
@@ -157,13 +157,13 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
           <td style="padding:4px;color:#ff6b6b">中1个</td><td style="text-align:center;padding:4px;color:#666">0注</td><td style="text-align:center;padding:4px;color:#666">0元</td><td style="text-align:center;padding:4px;color:#ff6b6b">-12元</td>
         </tr>
         <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
-          <td style="padding:4px;color:#4ecdc4">中2个</td><td style="text-align:center;padding:4px;color:#4ecdc4">1注</td><td style="text-align:center;padding:4px;color:#4ecdc4">19元</td><td style="text-align:center;padding:4px;color:#4ecdc4">+7元</td>
+          <td style="padding:4px;color:#4ecdc4">中2个</td><td style="text-align:center;padding:4px;color:#4ecdc4">1注</td><td style="text-align:center;padding:4px;color:#4ecdc4">25元</td><td style="text-align:center;padding:4px;color:#4ecdc4">+13元</td>
         </tr>
         <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
-          <td style="padding:4px;color:#4ecdc4">中3个</td><td style="text-align:center;padding:4px;color:#4ecdc4">3注</td><td style="text-align:center;padding:4px;color:#4ecdc4">57元</td><td style="text-align:center;padding:4px;color:#4ecdc4">+45元</td>
+          <td style="padding:4px;color:#4ecdc4">中3个</td><td style="text-align:center;padding:4px;color:#4ecdc4">3注</td><td style="text-align:center;padding:4px;color:#4ecdc4">75元</td><td style="text-align:center;padding:4px;color:#4ecdc4">+63元</td>
         </tr>
         <tr>
-          <td style="padding:4px;color:#ffd700;font-weight:bold">中4个</td><td style="text-align:center;padding:4px;color:#ffd700">6注</td><td style="text-align:center;padding:4px;color:#ffd700">114元</td><td style="text-align:center;padding:4px;color:#ffd700">+102元</td>
+          <td style="padding:4px;color:#ffd700;font-weight:bold">中4个</td><td style="text-align:center;padding:4px;color:#ffd700">6注</td><td style="text-align:center;padding:4px;color:#ffd700">150元</td><td style="text-align:center;padding:4px;color:#ffd700">+138元</td>
         </tr>
       </table>
       <br>
@@ -219,7 +219,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
     <div class="panel-title" style="color:#e84393">九选二 · 36注复式<span class="badge" style="background:rgba(232,67,147,.15);color:#e84393;border-color:rgba(232,67,147,.3)">每日成本72元</span></div>
     <div class="strategy-desc">
       <b>九选二玩法</b>：选9个号码，系统自动生成C(9,2)=36注选二，每注2元，每日成本<b>72元</b>。
-      <br><b>奖金规则</b>：选二中2个奖19元。中4个即回本（114元），中5个赚118元。
+      <br><b>奖金规则</b>：选二中2个奖25元（19元+派奖6元）。中4个即回本（150元），中5个赚214元。
     </div>
     <div class="generate-area">
       <button class="generate-btn" id="generate9Btn" onclick="generate9()" style="background:linear-gradient(135deg,#e84393,#fd79a8);box-shadow:0 6px 25px rgba(232,67,147,.3)">九 选 二 选 号</button>
@@ -287,7 +287,7 @@ const draws = [
 const ALL_NUMS = Array.from({length:80},(_,i)=>i+1);
 const PICK = 4;
 const COMBO_COST = 12; // C(4,2)=6注 × 2元
-const PRIZE_PER_HIT = 19; // 选二中2个奖19元
+const PRIZE_PER_HIT = 25; // 选二中2个奖19元+派奖6元=25元
 
 // ====== 保存记录管理（localStorage） ======
 const STORAGE_KEY = 'kl8_saved_records';
@@ -573,9 +573,9 @@ function runBacktest(){
     {label: '总奖金', value: totalPrize + '元', cls: totalPrize >= totalCost ? 'gold' : 'red'},
     {label: '净收益', value: (totalNet >= 0 ? '+' : '') + totalNet + '元', cls: totalNet >= 0 ? 'gold' : 'red'},
     {label: '中奖天数', value: winDays + '/' + DAYS, cls: 'gold'},
-    {label: '中2个', value: hit2 + '天×7=' + (hit2*7) + '元', cls: ''},
-    {label: '中3个', value: hit3 + '天×45=' + (hit3*45) + '元', cls: hit3 > 0 ? 'gold' : ''},
-    {label: '中4个', value: hit4 + '天×102=' + (hit4*102) + '元', cls: hit4 > 0 ? 'gold' : ''},
+    {label: '中2个', value: hit2 + '天×13=' + (hit2*13) + '元', cls: ''},
+    {label: '中3个', value: hit3 + '天×63=' + (hit3*63) + '元', cls: hit3 > 0 ? 'gold' : ''},
+    {label: '中4个', value: hit4 + '天×138=' + (hit4*138) + '元', cls: hit4 > 0 ? 'gold' : ''},
   ];
   items.forEach(it => {
     const el = document.createElement('div');
@@ -651,9 +651,9 @@ const topCandidates = [...pool5].map(n => ({n, f: freq[n]})).sort((a,b) => b.f -
 statsGrid.appendChild(statCard('上期期号', lastDraw.period, lastDraw.date));
 statsGrid.appendChild(statCard('候选池', pool5.size + '个', '近5期开过的号码'));
 statsGrid.appendChild(statCard('每日成本', COMBO_COST + '元', '6注选二 × 2元'));
-statsGrid.appendChild(statCard('中2个回本', '+7元', '1注×19元-12元','green'));
-statsGrid.appendChild(statCard('中3个大赚', '+45元', '3注×19元-12元','green'));
-statsGrid.appendChild(statCard('中4个暴击', '+102元', '6注×19元-12元','green'));
+statsGrid.appendChild(statCard('中2个回本', '+13元', '1注×25元-12元','green'));
+statsGrid.appendChild(statCard('中3个大赚', '+63元', '3注×25元-12元','green'));
+statsGrid.appendChild(statCard('中4个暴击', '+138元', '6注×25元-12元','green'));
 
 let oddTotal=0, evenTotal=0, smallTotal=0, bigTotal=0;
 recent20.forEach(d => {
