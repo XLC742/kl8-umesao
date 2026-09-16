@@ -641,14 +641,14 @@ statsGrid.appendChild(statCard('奇偶比', `${(oddTotal/totalDrawn*100).toFixed
 statsGrid.appendChild(statCard('大小比', `${(smallTotal/totalDrawn*100).toFixed(0)}% : ${(bigTotal/totalDrawn*100).toFixed(0)}%`, '小(1-40):大(41-80)'));
 
 const historyList = document.getElementById('historyList');
-const ballColors = ['#e74c3c','#e67e22','#f39c12','#2ecc71','#1abc9c','#3498db','#9b59b6','#e84393'];
+const ballColors = ['#e74c3c','#2ecc71','#e67e22','#1abc9c','#f39c12','#9b59b6','#3498db','#e84393'];
 recent20.forEach((d, idx) => {
   const item = document.createElement('div');
   item.className = 'history-item';
   const ago = idx === 0 ? '(最新)' : `(${idx}期前)`;
   let ballsHtml = '';
   d.nums.forEach(n => {
-    const color = ballColors[Math.floor((n-1)/10)];
+    const color = ballColors[Math.min(Math.floor(n/10), 7)];
     ballsHtml += `<div class="mini-ball" style="background:${color}">${n}</div>`;
   });
   item.innerHTML = `<span class="period">${d.period}</span><span class="date">${d.date} ${ago}</span><div class="balls">${ballsHtml}</div>`;
@@ -674,12 +674,12 @@ function generate(){
 
     const colors = [
       'linear-gradient(135deg,#ff6b6b,#ee5a24)',
-      'linear-gradient(135deg,#ffa502,#ff7f50)',
+      'linear-gradient(135deg,#2ecc71,#27ae60)',
+      'linear-gradient(135deg,#e67e22,#d35400)',
+      'linear-gradient(135deg,#1abc9c,#16a085)',
       'linear-gradient(135deg,#feca57,#ff9f43)',
-      'linear-gradient(135deg,#5f27cd,#341f97)',
+      'linear-gradient(135deg,#9b59b6,#8e44ad)',
       'linear-gradient(135deg,#54a0ff,#2e86de)',
-      'linear-gradient(135deg,#00d2d3,#48dbfb)',
-      'linear-gradient(135deg,#1dd1a1,#10ac84)',
       'linear-gradient(135deg,#ee5a6f,#f368e0)',
     ];
 
@@ -687,7 +687,7 @@ function generate(){
       setTimeout(() => {
         const ball = document.createElement('div');
         ball.className = 'result-ball';
-        const colorIdx = Math.floor((n-1)/10);
+        const colorIdx = Math.min(Math.floor(n/10), 7);
         ball.style.background = colors[colorIdx];
         ball.textContent = n;
         ballsDiv.appendChild(ball);
@@ -841,14 +841,14 @@ async function fetchFromGitHub() {
     // 更新历史记录
     const historyList = document.getElementById('historyList');
     historyList.innerHTML = '';
-    const ballColors = ['#e74c3c','#e67e22','#f39c12','#2ecc71','#1abc9c','#3498db','#9b59b6','#e84393'];
+    const ballColors = ['#e74c3c','#2ecc71','#e67e22','#1abc9c','#f39c12','#9b59b6','#3498db','#e84393'];
     r20.forEach((d, idx) => {
       const item = document.createElement('div');
       item.className = 'history-item';
       const ago = idx === 0 ? '(最新)' : '(' + idx + '期前)';
       let ballsHtml = '';
       d.nums.forEach(n => {
-        const color = ballColors[Math.floor((n - 1) / 10)];
+        const color = ballColors[Math.min(Math.floor(n / 10), 7)];
         ballsHtml += '<div class="mini-ball" style="background:' + color + '">' + n + '</div>';
       });
       item.innerHTML = '<span class="period">' + d.period + '</span><span class="date">' + d.date + ' ' + ago + '</span><div class="balls">' + ballsHtml + '</div>';
