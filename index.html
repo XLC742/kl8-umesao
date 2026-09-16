@@ -198,14 +198,14 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
     <div class="panel-title">号码频率热力图（1-80）</div>
     <div class="heatmap" id="heatmap"></div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-color zone-0 freq-1"></div>1-10 红</div>
-      <div class="legend-item"><div class="legend-color zone-1 freq-1"></div>11-20 绿</div>
-      <div class="legend-item"><div class="legend-color zone-2 freq-1"></div>21-30 橙</div>
-      <div class="legend-item"><div class="legend-color zone-3 freq-1"></div>31-40 青</div>
-      <div class="legend-item"><div class="legend-color zone-4 freq-1"></div>41-50 黄</div>
-      <div class="legend-item"><div class="legend-color zone-5 freq-1"></div>51-60 紫</div>
-      <div class="legend-item"><div class="legend-color zone-6 freq-1"></div>61-70 蓝</div>
-      <div class="legend-item"><div class="legend-color zone-7 freq-1"></div>71-80 粉</div>
+      <div class="legend-item"><div class="legend-color zone-0 freq-1"></div>1-9 红</div>
+      <div class="legend-item"><div class="legend-color zone-1 freq-1"></div>10-19 绿</div>
+      <div class="legend-item"><div class="legend-color zone-2 freq-1"></div>20-29 橙</div>
+      <div class="legend-item"><div class="legend-color zone-3 freq-1"></div>30-39 青</div>
+      <div class="legend-item"><div class="legend-color zone-4 freq-1"></div>40-49 黄</div>
+      <div class="legend-item"><div class="legend-color zone-5 freq-1"></div>50-59 紫</div>
+      <div class="legend-item"><div class="legend-color zone-6 freq-1"></div>60-69 蓝</div>
+      <div class="legend-item"><div class="legend-color zone-7 freq-1"></div>70-80 粉</div>
       <div class="legend-item"><div class="legend-color" style="background:rgba(255,255,255,.1);border:1px dashed #555"></div>上期已出</div>
     </div>
   </div>
@@ -601,7 +601,7 @@ ALL_NUMS.forEach(n => {
   else if(f === 5) level = 5;
   else if(f === 6) level = 6;
   else level = 7;
-  const zone = Math.floor((n - 1) / 10);
+  const zone = Math.min(Math.floor(n / 10), 7);
   cell.className = 'heat-cell zone-' + zone + ' freq-' + level;
   if(lastDrawNums.has(n)) cell.classList.add('excluded');
   cell.innerHTML = `<span class="num">${n}</span><span class="freq">${f}次</span>`;
@@ -832,7 +832,7 @@ async function fetchFromGitHub() {
       else if (f === 5) level = 5;
       else if (f === 6) level = 6;
       else level = 7;
-      const zone = Math.floor((n - 1) / 10);
+      const zone = Math.min(Math.floor(n / 10), 7);
       cell.className = 'heat-cell zone-' + zone + ' freq-' + level;
       if (draws[0].nums.includes(n)) cell.classList.add('excluded');
       cell.querySelector('.freq').textContent = f + '次';
