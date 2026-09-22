@@ -357,13 +357,16 @@ function renderSavedRecords(){
     else missCount++;
     if(result.hit === 4) hit4Count++;
 
+    const net = result.prize - COMBO_COST;
+    const netStr = net >= 0 ? `+${net}` : `${net}`;
+    const netColor = result.status === 'pending' ? '#888' : (net >= 0 ? '#4ecdc4' : '#ff6b6b');
     let statusHtml = '';
     if(result.status === 'pending'){
-      statusHtml = `<span class="status-pending">待开奖</span>`;
+      statusHtml = `<span class="status-pending">待开奖<br><span style="font-size:.8em;color:#888">成本${COMBO_COST}元</span></span>`;
     } else if(result.status === 'win'){
-      statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元</span>`;
+      statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元 · <b style="color:${netColor}">${netStr}</b></span>`;
     } else {
-      statusHtml = `<span class="status-miss">中${result.hit}个<br>未中奖</span>`;
+      statusHtml = `<span class="status-miss">中${result.hit}个 · 未中奖<br><b style="color:${netColor}">${netStr}元</b></span>`;
     }
 
     let ballsHtml = '';
@@ -852,10 +855,13 @@ function renderSaved9Records(){
     if(result.status === 'win'){ totalPrize += result.prize; winCount++; }
     else if(result.status === 'pending') pendingCount++;
     else missCount++;
+    const net9 = result.prize - COMBO9_COST;
+    const netStr9 = net9 >= 0 ? `+${net9}` : `${net9}`;
+    const netColor9 = result.status === 'pending' ? '#888' : (net9 >= 0 ? '#4ecdc4' : '#ff6b6b');
     let statusHtml = '';
-    if(result.status === 'pending') statusHtml = '<span class="status-pending">待开奖</span>';
-    else if(result.status === 'win') statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元</span>`;
-    else statusHtml = `<span class="status-miss">中${result.hit}个<br>未中奖</span>`;
+    if(result.status === 'pending') statusHtml = `<span class="status-pending">待开奖<br><span style="font-size:.8em;color:#888">成本${COMBO9_COST}元</span></span>`;
+    else if(result.status === 'win') statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元 · <b style="color:${netColor9}">${netStr9}</b></span>`;
+    else statusHtml = `<span class="status-miss">中${result.hit}个 · 未中奖<br><b style="color:${netColor9}">${netStr9}元</b></span>`;
     let ballsHtml = '';
     r.nums.forEach(n => {
       const color = ballColors9[Math.min(Math.floor(n/10), 7)];
