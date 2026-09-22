@@ -431,10 +431,10 @@ function saveCurrentNumbers(nums){
   const pad = n => String(n).padStart(2, '0');
   const savedDate = `${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-  // 计算这组号码的14天回测盈亏
+  // 计算这组号码的12天回测盈亏
   let backtestNet = 0;
   let backtestWinDays = 0;
-  const DAYS = Math.min(14, draws.length - 1);
+  const DAYS = Math.min(12, draws.length - 1);
   for(let i=0; i<DAYS; i++){
     const target = draws[i];
     const hit = nums.filter(n => target.nums.includes(n)).length;
@@ -847,14 +847,14 @@ function saveCurrent9Numbers(nums){
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   const savedDate = `${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  // 计算这组号码的14天回测盈亏
+  // 计算这组号码的12天回测盈亏
   let backtestNet = 0;
   let backtestWinDays = 0;
-  const DAYS = Math.min(14, draws.length - 1);
+  const DAYS = Math.min(12, draws.length - 1);
   for(let i=0; i<DAYS; i++){
     const target = draws[i];
     const hit = nums.filter(n => target.nums.includes(n)).length;
-    const prize = get9ComboPrize(hit);
+    const prize = getCombo9Prize(hit);
     const net = prize - COMBO9_COST;
     backtestNet += net;
     if(prize > 0) backtestWinDays++;
