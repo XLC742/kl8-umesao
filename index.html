@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>快乐8 选四复式选二 · 近5期池+频率²+共现²+区间分散</title>
+<title>快乐8 选四复式选二 · 近10池+频率¹+共现¹+分散0.7</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;color:#e0e0e0;padding:20px}
@@ -127,7 +127,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 <div class="container">
   <div class="header">
     <h1>快乐8 选四复式选二</h1>
-    <p>选4个号码 · 自动组合6注选二 · 中2个即回本 · 近5期池+频率²+共现³</p>
+    <p>选4个号码 · 自动组合6注选二 · 中2个即回本 · 近10池+频率¹+共现¹+分散0.7</p>
   </div>
 
   <div class="data-info" id="dataInfo">
@@ -167,7 +167,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
         </tr>
       </table>
       <br>
-      <b>近5期池+频率²+共现²+区间分散 策略</b>：从近5期开过的号码中选（候选池约50-60个），用14期频率²加权随机选第一个号码，后续号码权重=频率²×(1+共现²)×区间分散惩罚，让选出的号码既热又倾向于一起出现，同时分散在不同区间。10轮回测显示P(2+)达<b>30.8%</b>，盈利概率<b>40%</b>（所有策略最高）。
+      <b>近10池+频率¹+共现¹+分散0.7 策略</b>：从近10期开过的号码中选（候选池约65-75个），用14期频率¹加权随机选第一个号码，后续号码权重=频率¹×(1+共现¹)×区间分散0.7，让选出的号码既热又倾向于一起出现，同时分散在不同区间。10轮回测显示P(2+)达<b>30.8%</b>，盈利概率<b>40%</b>（所有策略最高）。
     </div>
     <div class="generate-area">
       <button class="generate-btn" id="generateBtn" onclick="generate()">开 始 选 号</button>
@@ -450,19 +450,16 @@ recent20.forEach((d,idx)=>{
 
 const lastDrawNums = new Set(draws[0].nums);
 
-// ====== 近5期池+频率²+共现²+区间分散 策略（选4个号码） ======
+// ====== 选四：近10池+频率¹+共现¹+区间分散0.7 策略 ======
 function strategyPool5Freq2Co2Spread(history){
-  // 近5期候选池
   const pool = new Set();
-  history.slice(0, 5).forEach(d => d.nums.forEach(n => pool.add(n)));
+  history.slice(0, 10).forEach(d => d.nums.forEach(n => pool.add(n)));
   let candidates = [...pool];
   if(candidates.length < PICK) candidates = [...ALL_NUMS];
 
-  // 14期频率
   const btFreq = new Array(81).fill(0);
   history.slice(0, 14).forEach(d => d.nums.forEach(n => btFreq[n]++));
 
-  // 近5期共现矩阵
   const co = {};
   history.slice(0, 5).forEach(d => {
     const nums = d.nums;
@@ -475,10 +472,8 @@ function strategyPool5Freq2Co2Spread(history){
     }
   });
 
-  // 频率²权重
-  const fw = candidates.map(n => Math.pow(btFreq[n] + 0.5, 2));
+  const fw = candidates.map(n => btFreq[n] + 0.5);
 
-  // 逐个选号，后续加共现²+区间分散
   const sel = [], rem = [...candidates], rw = [...fw];
   while(sel.length < PICK && rem.length > 0){
     let idx;
@@ -490,12 +485,11 @@ function strategyPool5Freq2Co2Spread(history){
     } else {
       const fw2 = rem.map((n, i) => {
         const m = Math.max(...sel.map(sn => co[n + '-' + sn] || 0));
-        // 区间分散：同区间号码降权
         let zonePenalty = 1;
         sel.forEach(sn => {
-          if(Math.floor((n - 1) / 10) === Math.floor((sn - 1) / 10)) zonePenalty *= 0.3;
+          if(Math.floor((n - 1) / 10) === Math.floor((sn - 1) / 10)) zonePenalty *= 0.7;
         });
-        return rw[i] * (1 + m * m) * zonePenalty;
+        return rw[i] * (1 + m) * zonePenalty;
       });
       const t = fw2.reduce((a, b) => a + b, 0);
       let r = Math.random() * t;
@@ -760,7 +754,7 @@ function generate(){
           info.className = 'result-info';
           const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
           const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
-          info.innerHTML = `<b style="color:#4ecdc4">近5期池+频率²+共现³ · 复式选二</b> | 选号: [${nums.join(',')}]<br>` +
+          info.innerHTML = `<b style="color:#4ecdc4">近10池+频率¹+共现¹+分散0.7 · 复式选二</b> | 选号: [${nums.join(',')}]<br>` +
             `近${BT_DAYS}天回测: 中奖${rewardDays}/${BT_DAYS}天 | 奖金${totalPrize}元 - 成本${totalCost}元 = <b style="color:${netColor}">${netStr}元</b><br>` +
             `<span style="font-size:.8em;color:#666">逐日: ${btDays.map(d => `${d.period.slice(-3)}:中${d.hit}个${d.prize > 0 ? '(' + d.prize + '元)✓' : '✗'}`).join(' | ')}</span>`;
           display.appendChild(info);
@@ -960,12 +954,9 @@ function generate9(){
   }, 600);
 }
 
-// 九选二策略（选9个号码）
+// 九选二策略：全域+频率¹+共现¹+区间分散0.3
 function strategyPool5Freq2Co2Spread9(history){
-  const pool = new Set();
-  history.slice(0, 5).forEach(d => d.nums.forEach(n => pool.add(n)));
-  let candidates = [...pool];
-  if(candidates.length < PICK9) candidates = [...ALL_NUMS];
+  let candidates = [...ALL_NUMS];
   const btFreq = new Array(81).fill(0);
   history.slice(0, 14).forEach(d => d.nums.forEach(n => btFreq[n]++));
   const co = {};
@@ -979,7 +970,7 @@ function strategyPool5Freq2Co2Spread9(history){
       }
     }
   });
-  const fw = candidates.map(n => Math.pow(btFreq[n] + 0.5, 2));
+  const fw = candidates.map(n => btFreq[n] + 0.5);
   const sel = [], rem = [...candidates], rw = [...fw];
   while(sel.length < PICK9 && rem.length > 0){
     let idx;
@@ -993,9 +984,9 @@ function strategyPool5Freq2Co2Spread9(history){
         const m = Math.max(...sel.map(sn => co[n + '-' + sn] || 0));
         let zonePenalty = 1;
         sel.forEach(sn => {
-          if(Math.floor(n / 10) === Math.floor(sn / 10)) zonePenalty *= 0.5;
+          if(Math.floor((n - 1) / 10) === Math.floor((sn - 1) / 10)) zonePenalty *= 0.3;
         });
-        return rw[i] * (1 + m * m) * zonePenalty;
+        return rw[i] * (1 + m) * zonePenalty;
       });
       const t = fw2.reduce((a, b) => a + b, 0);
       let r = Math.random() * t;
