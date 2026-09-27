@@ -59,6 +59,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 .bet-btn{background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);color:#ffd700;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:1em;font-weight:bold;transition:all .2s;line-height:1}
 .bet-btn:hover{background:rgba(255,215,0,.3)}
 .bet-btn:disabled{opacity:.3;cursor:not-allowed}
+.confirm-bet-btn{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1a1a2e;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:.8em;font-weight:bold;transition:all .2s}
+.confirm-bet-btn:hover{transform:scale(1.05)}
 .reset-balance-btn{background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);color:#ff6b6b;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:.8em;transition:all .2s}
 .reset-balance-btn:hover{background:rgba(255,107,107,.3)}
 .saved-summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:.85em;align-items:center}
@@ -400,15 +402,18 @@ function renderSavedRecords(){
     const btDays = r.backtestDays || 14;
     const btWins = r.backtestWinDays || 0;
 
-    const betAmt = r.betAmount || COMBO_COST;
+    const betAmt = r.betAmount || 0;
     const betUnit = COMBO_COST; // 每注成本
     const betUnits = Math.round(betAmt / betUnit);
     let betHtml = '';
     if(result.status === 'pending'){
-      betHtml = `<div style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;font-size:.8em">
-        <button class="bet-btn" onclick="adjustBet(${idx}, -1)">-</button>
-        <span style="color:#ffd700;min-width:60px;text-align:center">${betUnits > 0 ? '下注'+betUnits+'注<br>'+betAmt+'元' : '未下注<br>点击+下注'}</span>
-        <button class="bet-btn" onclick="adjustBet(${idx}, 1)">+</button>
+      const tempKey = 'temp_bet_' + idx;
+      const tempUnits = parseInt(localStorage.getItem(tempKey)) || betUnits;
+      betHtml = `<div style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;font-size:.8em;flex-wrap:wrap">
+        <button class="bet-btn" onclick="adjustTempBet(${idx}, -1)">-</button>
+        <span style="color:#ffd700;min-width:70px;text-align:center">${tempUnits > 0 ? tempUnits+'注 · '+tempUnits*betUnit+'元' : '未下注'}</span>
+        <button class="bet-btn" onclick="adjustTempBet(${idx}, 1)">+</button>
+        ${tempUnits !== betUnits ? `<button class="confirm-bet-btn" onclick="confirmBet(${idx})">确认</button>` : ''}
       </div>`;
     } else if(r.betSettled && r.betAmount > 0){
       const betNet = result.prize * (r.betAmount / COMBO_COST) - r.betAmount;
@@ -484,18 +489,27 @@ function deleteRecord(idx){
   renderSavedRecords();
 }
 
-function adjustBet(idx, delta){
+function adjustTempBet(idx, delta){
   const records = loadSavedRecords();
   const r = records[idx];
   if(!r || r.status !== 'pending') return;
+  const key = 'temp_bet_' + idx;
+  const current = parseInt(localStorage.getItem(key)) || Math.round((r.betAmount || 0) / COMBO_COST);
+  const newUnits = Math.max(0, current + delta);
+  localStorage.setItem(key, String(newUnits));
+  renderSavedRecords();
+}
 
-  const unit = COMBO_COST;
-  const currentUnits = Math.round((r.betAmount || unit) / unit);
-  const newUnits = Math.max(0, currentUnits + delta);
-  const newAmount = newUnits * unit;
-
+function confirmBet(idx){
+  const records = loadSavedRecords();
+  const r = records[idx];
+  if(!r || r.status !== 'pending') return;
+  const key = 'temp_bet_' + idx;
+  const newUnits = parseInt(localStorage.getItem(key)) || 0;
+  const newAmount = newUnits * COMBO_COST;
+  const oldAmount = r.betAmount || 0;
+  const diff = newAmount - oldAmount;
   const balance = loadBalance();
-  const diff = newAmount - (r.betAmount || unit);
 
   if(diff > 0 && balance < diff){
     alert('余额不足！');
@@ -505,6 +519,7 @@ function adjustBet(idx, delta){
   r.betAmount = newAmount;
   r.betSettled = false;
   saveBalance(balance - diff);
+  localStorage.removeItem(key);
   saveSavedRecords(records);
   renderSavedRecords();
 }
@@ -952,16 +967,27 @@ function delete9Record(idx){
   renderSaved9Records();
 }
 
-function adjust9Bet(idx, delta){
+function adjustTemp9Bet(idx, delta){
   const records = loadSaved9Records();
   const r = records[idx];
   if(!r || r.status !== 'pending') return;
-  const unit = COMBO9_COST;
-  const currentUnits = Math.round((r.betAmount || 0) / unit);
-  const newUnits = Math.max(0, currentUnits + delta);
-  const newAmount = newUnits * unit;
+  const key = 'temp_bet9_' + idx;
+  const current = parseInt(localStorage.getItem(key)) || Math.round((r.betAmount || 0) / COMBO9_COST);
+  const newUnits = Math.max(0, current + delta);
+  localStorage.setItem(key, String(newUnits));
+  renderSaved9Records();
+}
+
+function confirm9Bet(idx){
+  const records = loadSaved9Records();
+  const r = records[idx];
+  if(!r || r.status !== 'pending') return;
+  const key = 'temp_bet9_' + idx;
+  const newUnits = parseInt(localStorage.getItem(key)) || 0;
+  const newAmount = newUnits * COMBO9_COST;
+  const oldAmount = r.betAmount || 0;
+  const diff = newAmount - oldAmount;
   const balance = loadBalance();
-  const diff = newAmount - (r.betAmount || 0);
   if(diff > 0 && balance < diff){
     alert('余额不足！');
     return;
@@ -969,6 +995,7 @@ function adjust9Bet(idx, delta){
   r.betAmount = newAmount;
   r.betSettled = false;
   saveBalance(balance - diff);
+  localStorage.removeItem(key);
   saveSaved9Records(records);
   renderSaved9Records();
 }
@@ -1017,10 +1044,13 @@ function renderSaved9Records(){
     const betUnits9 = Math.round(betAmt9 / betUnit9);
     let betHtml9 = '';
     if(result.status === 'pending'){
-      betHtml9 = `<div style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;font-size:.8em">
-        <button class="bet-btn" onclick="adjust9Bet(${idx}, -1)">-</button>
-        <span style="color:#ffd700;min-width:60px;text-align:center">${betUnits9 > 0 ? '下注'+betUnits9+'注<br>'+betAmt9+'元' : '未下注<br>点击+下注'}</span>
-        <button class="bet-btn" onclick="adjust9Bet(${idx}, 1)">+</button>
+      const tempKey9 = 'temp_bet9_' + idx;
+      const tempUnits9 = parseInt(localStorage.getItem(tempKey9)) || betUnits9;
+      betHtml9 = `<div style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;font-size:.8em;flex-wrap:wrap">
+        <button class="bet-btn" onclick="adjustTemp9Bet(${idx}, -1)">-</button>
+        <span style="color:#ffd700;min-width:70px;text-align:center">${tempUnits9 > 0 ? tempUnits9+'注 · '+tempUnits9*betUnit9+'元' : '未下注'}</span>
+        <button class="bet-btn" onclick="adjustTemp9Bet(${idx}, 1)">+</button>
+        ${tempUnits9 !== betUnits9 ? `<button class="confirm-bet-btn" onclick="confirm9Bet(${idx})">确认</button>` : ''}
       </div>`;
     } else if(r.betSettled && r.betAmount > 0){
       const betNet9 = result.prize * (r.betAmount / COMBO9_COST) - r.betAmount;
