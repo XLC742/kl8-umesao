@@ -56,7 +56,12 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 .saved-item .status-miss{color:#ff6b6b}
 .saved-item .delete-btn{background:rgba(255,69,58,.15);border:1px solid rgba(255,69,58,.3);color:#ff6b6b;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.8em;transition:all .2s}
 .saved-item .delete-btn:hover{background:rgba(255,69,58,.3)}
-.saved-summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:.85em}
+.bet-btn{background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);color:#ffd700;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:1em;font-weight:bold;transition:all .2s;line-height:1}
+.bet-btn:hover{background:rgba(255,215,0,.3)}
+.bet-btn:disabled{opacity:.3;cursor:not-allowed}
+.reset-balance-btn{background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);color:#ff6b6b;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:.8em;transition:all .2s}
+.reset-balance-btn:hover{background:rgba(255,107,107,.3)}
+.saved-summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:.85em;align-items:center}
 .saved-summary span{color:#888}
 .saved-summary b{color:#ffd700}
 .strategy-desc{background:rgba(78,205,196,.05);border:1px solid rgba(78,205,196,.15);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.82em;color:#888;line-height:1.6}
@@ -131,8 +136,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
   </div>
 
   <div class="data-info" id="dataInfo">
-    <span>最新期号: <b id="infoPeriod">2026259</b></span>
-    <span>开奖日期: <b id="infoDate">2026-09-26 21:30:00</b></span>
+    <span>最新期号: <b id="infoPeriod">2026241</b></span>
+    <span>开奖日期: <b id="infoDate">2026-09-08(二)</b></span>
     <span>数据来源: <b id="infoSource" style="color:#ff8c00">本地数据</b></span>
     <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">更新数据</button>
   </div>
@@ -250,13 +255,13 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 <script>
 // ====== 近20期开奖数据（来源：中国福彩官方） ======
 const draws = [
-  {period:"2026259",date:"2026-09-26 21:30:00",nums:[5,6,13,26,29,30,34,36,44,50,54,56,61,62,66,73,74,76,79,80]},
-  {period:"2026258",date:"2026-09-25(五)",nums:[7,13,14,15,17,19,20,24,28,30,35,44,50,51,54,57,60,64,75,78]},
-  {period:"2026257",date:"2026-09-24(四)",nums:[1,4,7,8,10,13,23,24,31,33,39,40,47,48,58,61,65,74,76,79]},
-  {period:"2026256",date:"2026-09-23 21:30:00",nums:[1,2,6,11,12,14,15,22,24,32,33,35,38,46,67,68,71,73,74,76]},
-  {period:"2026255",date:"2026-09-22(二)",nums:[2,9,12,16,18,23,26,31,36,44,47,52,54,55,59,60,61,66,72,77]},
-  {period:"2026254",date:"2026-09-21(一)",nums:[2,4,10,13,18,20,21,26,32,37,43,49,50,57,62,66,69,73,78,80]},
-  {period:"2026253",date:"2026-09-20(日)",nums:[1,2,8,17,23,24,29,31,40,41,46,47,51,54,59,62,65,72,74,79]},
+  {period:"2026259",date:"09-26(六)",nums:[5,6,13,26,29,30,34,36,44,50,54,56,61,62,66,73,74,76,79,80]},
+  {period:"2026258",date:"09-25(五)",nums:[7,13,14,15,17,19,20,24,28,30,35,44,50,51,54,57,60,64,75,78]},
+  {period:"2026257",date:"09-24(四)",nums:[1,4,7,8,10,13,23,24,31,33,39,40,47,48,58,61,65,74,76,79]},
+  {period:"2026256",date:"09-23(三)",nums:[1,2,6,11,12,14,15,22,24,32,33,35,38,46,67,68,71,73,74,76]},
+  {period:"2026255",date:"09-22(二)",nums:[2,9,12,16,18,23,26,31,36,44,47,52,54,55,59,60,61,66,72,77]},
+  {period:"2026254",date:"09-21(一)",nums:[2,4,10,13,18,20,21,26,32,37,43,49,50,57,62,66,69,73,78,80]},
+  {period:"2026253",date:"09-20(日)",nums:[1,2,8,17,23,24,29,31,40,41,46,47,51,54,59,62,65,72,74,79]},
   {period:"2026252",date:"09-19(六)",nums:[2,3,4,8,36,38,40,41,46,49,50,52,53,56,57,62,63,65,68,72]},
   {period:"2026251",date:"09-18(五)",nums:[1,4,8,9,10,11,18,26,28,29,43,49,51,52,53,54,62,66,70,76]},
   {period:"2026250",date:"09-17(四)",nums:[4,5,6,8,17,22,23,31,35,47,49,51,59,60,62,65,67,68,76,78]},
@@ -292,6 +297,20 @@ const PRIZE_PER_HIT = 25; // 选二中2个奖19元+派奖6元=25元
 // ====== 保存记录管理（localStorage） ======
 const STORAGE_KEY = 'kl8_saved_records';
 const MAX_RECORDS = 10;
+const BALANCE_KEY = 'kl8_balance';
+const INIT_BALANCE = 1000;
+
+function loadBalance(){
+  try {
+    const raw = localStorage.getItem(BALANCE_KEY);
+    if(raw === null) return INIT_BALANCE;
+    return parseFloat(raw) || INIT_BALANCE;
+  } catch(e) { return INIT_BALANCE; }
+}
+
+function saveBalance(val){
+  localStorage.setItem(BALANCE_KEY, String(val));
+}
 
 function loadSavedRecords(){
   try {
@@ -381,6 +400,25 @@ function renderSavedRecords(){
     const btDays = r.backtestDays || 14;
     const btWins = r.backtestWinDays || 0;
 
+    const betAmt = r.betAmount || COMBO_COST;
+    const betUnit = COMBO_COST; // 每注成本
+    const betUnits = Math.round(betAmt / betUnit);
+    let betHtml = '';
+    if(result.status === 'pending'){
+      betHtml = `<div style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;font-size:.8em">
+        <button class="bet-btn" onclick="adjustBet(${idx}, -1)">-</button>
+        <span style="color:#ffd700;min-width:60px;text-align:center">${betUnits > 0 ? '下注'+betUnits+'注<br>'+betAmt+'元' : '未下注<br>点击+下注'}</span>
+        <button class="bet-btn" onclick="adjustBet(${idx}, 1)">+</button>
+      </div>`;
+    } else if(r.betSettled && r.betAmount > 0){
+      const betNet = result.prize * (r.betAmount / COMBO_COST) - r.betAmount;
+      const betNetStr = betNet >= 0 ? `+${betNet}` : `${betNet}`;
+      const betNetColor = betNet >= 0 ? '#4ecdc4' : '#ff6b6b';
+      betHtml = `<div style="width:100%;text-align:center;font-size:.75em;margin-top:4px">
+        下注${betUnits}注 · 盈亏: <b style="color:${betNetColor}">${betNetStr}元</b>
+      </div>`;
+    }
+
     html += `<div class="saved-item">
       <span class="saved-period">${r.targetPeriod}</span>
       <span class="saved-date">${r.savedDate}</span>
@@ -388,6 +426,7 @@ function renderSavedRecords(){
       <div style="width:100%;text-align:center;font-size:.75em;color:#888;margin-top:2px">
         回测(${btDays}天): <b style="color:${btColor}">${btNetStr}元</b> · 中奖${btWins}天
       </div>
+      ${betHtml}
       <span class="saved-status">${statusHtml}</span>
       <button class="delete-btn" onclick="deleteRecord(${idx})" title="删除">&times;</button>
     </div>`;
@@ -397,7 +436,12 @@ function renderSavedRecords(){
   const netProfit = totalPrize - totalCost;
   const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
   const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
+
+  const balance = loadBalance();
+  const balColor = balance >= INIT_BALANCE ? '#4ecdc4' : '#ff6b6b';
+
   summary.innerHTML = `
+    <span>娱乐本金: <b style="color:${balColor};font-size:1.1em">${balance}</b>元</span>
     <span>保存: <b>${records.length}</b>组</span>
     <span>成本: <b>${totalCost}</b>元</span>
     <span>奖金: <b>${totalPrize}</b>元</span>
@@ -405,16 +449,71 @@ function renderSavedRecords(){
     <span>中奖: <b>${winCount}</b>组</span>
     <span>待开: <b>${pendingCount}</b>组</span>
     ${hit4Count > 0 ? `<span style="color:#ffd700">中4全中: <b>${hit4Count}</b>次</span>` : ''}
+    <button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>
   `;
+
+  // 自动结算已开奖的下注
+  let balanceChanged = false;
+  records.forEach((r, idx) => {
+    const res = checkSavedRecordHit(r, draws);
+    if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
+      const prizeMult = r.betAmount / COMBO_COST;
+      const winAmount = res.prize * prizeMult;
+      const netChange = winAmount - r.betAmount;
+      const newBal = loadBalance() + netChange;
+      saveBalance(Math.max(0, newBal));
+      r.betSettled = true;
+      balanceChanged = true;
+    }
+  });
+  if(balanceChanged) saveSavedRecords(records);
 
   saveSavedRecords(records);
 }
 
 function deleteRecord(idx){
   const records = loadSavedRecords();
+  // 如果是待开奖且有下注，退回本金
+  const r = records[idx];
+  if(r && r.status === 'pending' && r.betAmount > 0){
+    const bal = loadBalance();
+    saveBalance(bal + r.betAmount);
+  }
   records.splice(idx, 1);
   saveSavedRecords(records);
   renderSavedRecords();
+}
+
+function adjustBet(idx, delta){
+  const records = loadSavedRecords();
+  const r = records[idx];
+  if(!r || r.status !== 'pending') return;
+
+  const unit = COMBO_COST;
+  const currentUnits = Math.round((r.betAmount || unit) / unit);
+  const newUnits = Math.max(0, currentUnits + delta);
+  const newAmount = newUnits * unit;
+
+  const balance = loadBalance();
+  const diff = newAmount - (r.betAmount || unit);
+
+  if(diff > 0 && balance < diff){
+    alert('余额不足！');
+    return;
+  }
+
+  r.betAmount = newAmount;
+  r.betSettled = false;
+  saveBalance(balance - diff);
+  saveSavedRecords(records);
+  renderSavedRecords();
+}
+
+function resetBalance(){
+  if(confirm('确定重置本金为1000元吗？')){
+    saveBalance(INIT_BALANCE);
+    renderSavedRecords();
+  }
 }
 
 function saveCurrentNumbers(nums, btNet, btWinDays, btDays){
@@ -440,7 +539,9 @@ function saveCurrentNumbers(nums, btNet, btWinDays, btDays){
     prize: 0,
     backtestNet: btNet || 0,
     backtestWinDays: btWinDays || 0,
-    backtestDays: btDays || 0
+    backtestDays: btDays || 0,
+    betAmount: 0,
+    betSettled: false
   });
   saveSavedRecords(records);
   renderSavedRecords();
@@ -834,14 +935,40 @@ function saveCurrent9Numbers(nums, btNet, btWinDays, btDays){
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   const savedDate = `${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  records.push({nums: [...nums], targetPeriod: nextPeriod, savedDate, status: 'pending', hit: 0, prize: 0, backtestNet: btNet || 0, backtestWinDays: btWinDays || 0, backtestDays: btDays || 0});
+  records.push({nums: [...nums], targetPeriod: nextPeriod, savedDate, status: 'pending', hit: 0, prize: 0, backtestNet: btNet || 0, backtestWinDays: btWinDays || 0, backtestDays: btDays || 0, betAmount: 0, betSettled: false});
   saveSaved9Records(records);
   renderSaved9Records();
 }
 
 function delete9Record(idx){
   const records = loadSaved9Records();
+  const r = records[idx];
+  if(r && r.status === 'pending' && r.betAmount > 0){
+    const bal = loadBalance();
+    saveBalance(bal + r.betAmount);
+  }
   records.splice(idx, 1);
+  saveSaved9Records(records);
+  renderSaved9Records();
+}
+
+function adjust9Bet(idx, delta){
+  const records = loadSaved9Records();
+  const r = records[idx];
+  if(!r || r.status !== 'pending') return;
+  const unit = COMBO9_COST;
+  const currentUnits = Math.round((r.betAmount || 0) / unit);
+  const newUnits = Math.max(0, currentUnits + delta);
+  const newAmount = newUnits * unit;
+  const balance = loadBalance();
+  const diff = newAmount - (r.betAmount || 0);
+  if(diff > 0 && balance < diff){
+    alert('余额不足！');
+    return;
+  }
+  r.betAmount = newAmount;
+  r.betSettled = false;
+  saveBalance(balance - diff);
   saveSaved9Records(records);
   renderSaved9Records();
 }
@@ -884,13 +1011,51 @@ function renderSaved9Records(){
     const btColor9 = btNet9 >= 0 ? '#4ecdc4' : '#ff6b6b';
     const btDays9 = r.backtestDays || 14;
     const btWins9 = r.backtestWinDays || 0;
-    html += `<div class="saved-item"><span class="saved-period">${r.targetPeriod}</span><span class="saved-date">${r.savedDate}</span><div class="saved-balls">${ballsHtml}</div><div style="width:100%;text-align:center;font-size:.75em;color:#888;margin-top:2px">回测(${btDays9}天): <b style="color:${btColor9}">${btNetStr9}元</b> · 中奖${btWins9}天</div><span class="saved-status">${statusHtml}</span><button class="delete-btn" onclick="delete9Record(${idx})" title="删除">&times;</button></div>`;
+
+    const betAmt9 = r.betAmount || 0;
+    const betUnit9 = COMBO9_COST;
+    const betUnits9 = Math.round(betAmt9 / betUnit9);
+    let betHtml9 = '';
+    if(result.status === 'pending'){
+      betHtml9 = `<div style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;font-size:.8em">
+        <button class="bet-btn" onclick="adjust9Bet(${idx}, -1)">-</button>
+        <span style="color:#ffd700;min-width:60px;text-align:center">${betUnits9 > 0 ? '下注'+betUnits9+'注<br>'+betAmt9+'元' : '未下注<br>点击+下注'}</span>
+        <button class="bet-btn" onclick="adjust9Bet(${idx}, 1)">+</button>
+      </div>`;
+    } else if(r.betSettled && r.betAmount > 0){
+      const betNet9 = result.prize * (r.betAmount / COMBO9_COST) - r.betAmount;
+      const betNetStr9 = betNet9 >= 0 ? `+${betNet9}` : `${betNet9}`;
+      const betNetColor9 = betNet9 >= 0 ? '#4ecdc4' : '#ff6b6b';
+      betHtml9 = `<div style="width:100%;text-align:center;font-size:.75em;margin-top:4px">
+        下注${betUnits9}注 · 盈亏: <b style="color:${betNetColor9}">${betNetStr9}元</b>
+      </div>`;
+    }
+
+    html += `<div class="saved-item"><span class="saved-period">${r.targetPeriod}</span><span class="saved-date">${r.savedDate}</span><div class="saved-balls">${ballsHtml}</div><div style="width:100%;text-align:center;font-size:.75em;color:#888;margin-top:2px">回测(${btDays9}天): <b style="color:${btColor9}">${btNetStr9}元</b> · 中奖${btWins9}天</div>${betHtml9}<span class="saved-status">${statusHtml}</span><button class="delete-btn" onclick="delete9Record(${idx})" title="删除">&times;</button></div>`;
   });
   list.innerHTML = html;
   const netProfit = totalPrize - totalCost;
   const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
   const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
-  summary.innerHTML = `<span>保存: <b>${records.length}</b>组</span><span>成本: <b>${totalCost}</b>元</span><span>奖金: <b>${totalPrize}</b>元</span><span>净收益: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span>`;
+  const balance9 = loadBalance();
+  const balColor9 = balance9 >= INIT_BALANCE ? '#4ecdc4' : '#ff6b6b';
+  summary.innerHTML = `<span>娱乐本金: <b style="color:${balColor9};font-size:1.1em">${balance9}</b>元</span><span>保存: <b>${records.length}</b>组</span><span>成本: <b>${totalCost}</b>元</span><span>奖金: <b>${totalPrize}</b>元</span><span>净收益: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span><button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>`;
+
+  // 自动结算已开奖的下注
+  let balChanged9 = false;
+  records.forEach((r, idx) => {
+    const res = checkSaved9RecordHit(r, draws);
+    if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
+      const prizeMult = r.betAmount / COMBO9_COST;
+      const winAmount = res.prize * prizeMult;
+      const netChange = winAmount - r.betAmount;
+      const newBal = loadBalance() + netChange;
+      saveBalance(Math.max(0, newBal));
+      r.betSettled = true;
+      balChanged9 = true;
+    }
+  });
+  if(balChanged9) saveSaved9Records(records);
   saveSaved9Records(records);
 }
 
