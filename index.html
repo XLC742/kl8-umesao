@@ -138,8 +138,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
   </div>
 
   <div class="data-info" id="dataInfo">
-    <span>最新期号: <b id="infoPeriod">2026260</b></span>
-    <span>开奖日期: <b id="infoDate">2026-09-27(日)</b></span>
+    <span>最新期号: <b id="infoPeriod">2026241</b></span>
+    <span>开奖日期: <b id="infoDate">2026-09-08(二)</b></span>
     <span>数据来源: <b id="infoSource" style="color:#ff8c00">本地数据</b></span>
     <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">更新数据</button>
   </div>
@@ -257,7 +257,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 <script>
 // ====== 近20期开奖数据（来源：中国福彩官方） ======
 const draws = [
-  {period:"2026260",date:"2026-09-27(日)",nums:[2,7,16,19,21,25,30,31,33,35,42,45,50,52,53,55,56,60,63,72]},
+  {period:"2026260",date:"09-27(日)",nums:[2,7,16,19,21,25,30,31,33,35,42,45,50,52,53,55,56,60,63,72]},
   {period:"2026259",date:"09-26(六)",nums:[5,6,13,26,29,30,34,36,44,50,54,56,61,62,66,73,74,76,79,80]},
   {period:"2026258",date:"09-25(五)",nums:[7,13,14,15,17,19,20,24,28,30,35,44,50,51,54,57,60,64,75,78]},
   {period:"2026257",date:"09-24(四)",nums:[1,4,7,8,10,13,23,24,31,33,39,40,47,48,58,61,65,74,76,79]},
@@ -464,10 +464,12 @@ function renderSavedRecords(){
     if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
       const prizeMult = r.betAmount / COMBO_COST;
       const winAmount = res.prize * prizeMult;
-      const netChange = winAmount - r.betAmount;
-      const newBal = loadBalance() + netChange;
+      const newBal = loadBalance() + winAmount;
       saveBalance(Math.max(0, newBal));
       r.betSettled = true;
+      r.status = res.status;
+      r.hit = res.hit;
+      r.prize = res.prize;
       balanceChanged = true;
     }
   });
@@ -1078,10 +1080,12 @@ function renderSaved9Records(){
     if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
       const prizeMult = r.betAmount / COMBO9_COST;
       const winAmount = res.prize * prizeMult;
-      const netChange = winAmount - r.betAmount;
-      const newBal = loadBalance() + netChange;
+      const newBal = loadBalance() + winAmount;
       saveBalance(Math.max(0, newBal));
       r.betSettled = true;
+      r.status = res.status;
+      r.hit = res.hit;
+      r.prize = res.prize;
       balChanged9 = true;
     }
   });
