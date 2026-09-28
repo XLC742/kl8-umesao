@@ -358,6 +358,24 @@ function renderSavedRecords(){
 
   document.getElementById('savedBadge').textContent = `${records.length}/10`;
 
+  // 自动结算已开奖的下注（在渲染前执行）
+  let balanceChanged = false;
+  records.forEach((r, idx) => {
+    const res = checkSavedRecordHit(r, draws);
+    if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
+      const prizeMult = r.betAmount / COMBO_COST;
+      const winAmount = res.prize * prizeMult;
+      const newBal = loadBalance() + winAmount;
+      saveBalance(Math.max(0, newBal));
+      r.betSettled = true;
+      r.status = res.status;
+      r.hit = res.hit;
+      r.prize = res.prize;
+      balanceChanged = true;
+    }
+  });
+  if(balanceChanged) saveSavedRecords(records);
+
   let totalCost = records.length * COMBO_COST;
   let totalPrize = 0;
   let winCount = 0;
@@ -456,24 +474,6 @@ function renderSavedRecords(){
     ${hit4Count > 0 ? `<span style="color:#ffd700">中4全中: <b>${hit4Count}</b>次</span>` : ''}
     <button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>
   `;
-
-  // 自动结算已开奖的下注
-  let balanceChanged = false;
-  records.forEach((r, idx) => {
-    const res = checkSavedRecordHit(r, draws);
-    if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
-      const prizeMult = r.betAmount / COMBO_COST;
-      const winAmount = res.prize * prizeMult;
-      const newBal = loadBalance() + winAmount;
-      saveBalance(Math.max(0, newBal));
-      r.betSettled = true;
-      r.status = res.status;
-      r.hit = res.hit;
-      r.prize = res.prize;
-      balanceChanged = true;
-    }
-  });
-  if(balanceChanged) saveSavedRecords(records);
 
   saveSavedRecords(records);
 }
@@ -1013,6 +1013,25 @@ function renderSaved9Records(){
     return;
   }
   document.getElementById('saved9Badge').textContent = `${records.length}/10`;
+
+  // 自动结算已开奖的下注（在渲染前执行）
+  let balChanged9 = false;
+  records.forEach((r, idx) => {
+    const res = checkSaved9RecordHit(r, draws);
+    if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
+      const prizeMult = r.betAmount / COMBO9_COST;
+      const winAmount = res.prize * prizeMult;
+      const newBal = loadBalance() + winAmount;
+      saveBalance(Math.max(0, newBal));
+      r.betSettled = true;
+      r.status = res.status;
+      r.hit = res.hit;
+      r.prize = res.prize;
+      balChanged9 = true;
+    }
+  });
+  if(balChanged9) saveSaved9Records(records);
+
   let totalCost = records.length * COMBO9_COST;
   let totalPrize = 0, winCount = 0, pendingCount = 0, missCount = 0;
   const ballColors9 = ['#e74c3c','#2ecc71','#e67e22','#1abc9c','#f39c12','#9b59b6','#3498db','#e84393'];
@@ -1073,23 +1092,6 @@ function renderSaved9Records(){
   const balColor9 = balance9 >= INIT_BALANCE ? '#4ecdc4' : '#ff6b6b';
   summary.innerHTML = `<span>娱乐本金: <b style="color:${balColor9};font-size:1.1em">${balance9}</b>元</span><span>保存: <b>${records.length}</b>组</span><span>成本: <b>${totalCost}</b>元</span><span>奖金: <b>${totalPrize}</b>元</span><span>净收益: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span><button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>`;
 
-  // 自动结算已开奖的下注
-  let balChanged9 = false;
-  records.forEach((r, idx) => {
-    const res = checkSaved9RecordHit(r, draws);
-    if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
-      const prizeMult = r.betAmount / COMBO9_COST;
-      const winAmount = res.prize * prizeMult;
-      const newBal = loadBalance() + winAmount;
-      saveBalance(Math.max(0, newBal));
-      r.betSettled = true;
-      r.status = res.status;
-      r.hit = res.hit;
-      r.prize = res.prize;
-      balChanged9 = true;
-    }
-  });
-  if(balChanged9) saveSaved9Records(records);
   saveSaved9Records(records);
 }
 
