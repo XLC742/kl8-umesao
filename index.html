@@ -533,9 +533,16 @@ function confirmBet(idx){
 }
 
 function resetBalance(){
-  if(confirm('确定重置本金为1000元吗？')){
+  if(confirm('确定重置选四本金为1000元吗？')){
     saveBalance(INIT_BALANCE);
     renderSavedRecords();
+  }
+}
+
+function resetBalance9(){
+  if(confirm('确定重置选九本金为1000元吗？')){
+    saveBalance9(INIT_BALANCE);
+    renderSaved9Records();
   }
 }
 
@@ -922,6 +929,19 @@ const PICK9 = 9;
 const COMBO9_COST = 72; // C(9,2)=36注 × 2元
 const STORAGE9_KEY = 'kl8_saved_records_9';
 const MAX9_RECORDS = 10;
+const BALANCE9_KEY = 'kl8_balance_9';
+
+function loadBalance9(){
+  try {
+    const raw = localStorage.getItem(BALANCE9_KEY);
+    if(raw === null) return INIT_BALANCE;
+    return parseFloat(raw) || INIT_BALANCE;
+  } catch(e) { return INIT_BALANCE; }
+}
+
+function saveBalance9(val){
+  localStorage.setItem(BALANCE9_KEY, String(val));
+}
 
 function getCombo9Prize(hit){
   if(hit < 2) return 0;
@@ -967,8 +987,8 @@ function delete9Record(idx){
   const records = loadSaved9Records();
   const r = records[idx];
   if(r && r.status === 'pending' && r.betAmount > 0){
-    const bal = loadBalance();
-    saveBalance(bal + r.betAmount);
+    const bal = loadBalance9();
+    saveBalance9(bal + r.betAmount);
   }
   records.splice(idx, 1);
   saveSaved9Records(records);
@@ -995,14 +1015,14 @@ function confirm9Bet(idx){
   const newAmount = newUnits * COMBO9_COST;
   const oldAmount = r.betAmount || 0;
   const diff = newAmount - oldAmount;
-  const balance = loadBalance();
+  const balance = loadBalance9();
   if(diff > 0 && balance < diff){
     alert('余额不足！');
     return;
   }
   r.betAmount = newAmount;
   r.betSettled = false;
-  saveBalance(balance - diff);
+  saveBalance9(balance - diff);
   localStorage.removeItem(key);
   saveSaved9Records(records);
   renderSaved9Records();
@@ -1027,8 +1047,8 @@ function renderSaved9Records(){
     if(res.status !== 'pending' && !r.betSettled && r.betAmount > 0){
       const prizeMult = r.betAmount / COMBO9_COST;
       const winAmount = res.prize * prizeMult;
-      const newBal = loadBalance() + winAmount;
-      saveBalance(Math.max(0, newBal));
+      const newBal = loadBalance9() + winAmount;
+      saveBalance9(Math.max(0, newBal));
       r.betSettled = true;
       r.status = res.status;
       r.hit = res.hit;
@@ -1101,9 +1121,9 @@ function renderSaved9Records(){
   const netProfit = totalBetPrize9 - totalBetCost9;
   const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
   const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
-  const balance9 = loadBalance();
+  const balance9 = loadBalance9();
   const balColor9 = balance9 >= INIT_BALANCE ? '#4ecdc4' : '#ff6b6b';
-  summary.innerHTML = `<span>娱乐本金: <b style="color:${balColor9};font-size:1.1em">${balance9}</b>元</span><span>保存: <b>${records.length}</b>组</span><span>下注: <b>${totalBetCost9}</b>元</span><span>奖金: <b>${totalBetPrize9}</b>元</span><span>净盈亏: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span><button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>`;
+  summary.innerHTML = `<span>娱乐本金: <b style="color:${balColor9};font-size:1.1em">${balance9}</b>元</span><span>保存: <b>${records.length}</b>组</span><span>下注: <b>${totalBetCost9}</b>元</span><span>奖金: <b>${totalBetPrize9}</b>元</span><span>净盈亏: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span><button class="reset-balance-btn" onclick="resetBalance9()" title="重置本金">重置本金</button>`;
 
   saveSaved9Records(records);
 }
