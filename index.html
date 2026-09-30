@@ -138,8 +138,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
   </div>
 
   <div class="data-info" id="dataInfo">
-    <span>最新期号: <b id="infoPeriod">2026262</b></span>
-    <span>开奖日期: <b id="infoDate">2026-09-29 21:30:00</b></span>
+    <span>最新期号: <b id="infoPeriod">2026241</b></span>
+    <span>开奖日期: <b id="infoDate">2026-09-08(二)</b></span>
     <span>数据来源: <b id="infoSource" style="color:#ff8c00">本地数据</b></span>
     <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">更新数据</button>
   </div>
@@ -257,8 +257,8 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gr
 <script>
 // ====== 近20期开奖数据（来源：中国福彩官方） ======
 const draws = [
-  {period:"2026262",date:"2026-09-29 21:30:00",nums:[4,6,9,12,15,17,20,33,42,44,49,54,55,59,61,65,72,73,78,80]},
-  {period:"2026261",date:"2026-09-28 21:30:00",nums:[1,11,17,21,23,27,28,35,37,42,45,46,48,61,72,73,75,78,79,80]},
+  {period:"2026262",date:"09-29(二)",nums:[4,6,9,12,15,17,20,33,42,44,49,54,55,59,61,65,72,73,78,80]},
+  {period:"2026261",date:"09-28(一)",nums:[1,11,17,21,23,27,28,35,37,42,45,46,48,61,72,73,75,78,79,80]},
   {period:"2026260",date:"09-27(日)",nums:[2,7,16,19,21,25,30,31,33,35,42,45,50,52,53,55,56,60,63,72]},
   {period:"2026259",date:"09-26(六)",nums:[5,6,13,26,29,30,34,36,44,50,54,56,61,62,66,73,74,76,79,80]},
   {period:"2026258",date:"09-25(五)",nums:[7,13,14,15,17,19,20,24,28,30,35,44,50,51,54,57,60,64,75,78]},
@@ -376,8 +376,8 @@ function renderSavedRecords(){
   });
   if(balanceChanged) saveSavedRecords(records);
 
-  let totalCost = records.length * COMBO_COST;
-  let totalPrize = 0;
+  let totalBetCost = 0;
+  let totalBetPrize = 0;
   let winCount = 0;
   let pendingCount = 0;
   let missCount = 0;
@@ -391,19 +391,28 @@ function renderSavedRecords(){
     r.status = result.status;
     r.hit = result.hit;
     r.prize = result.prize;
-    if(result.status === 'win'){ totalPrize += result.prize; winCount++; }
+    if(r.betAmount > 0){
+      totalBetCost += r.betAmount;
+      if(r.betSettled) totalBetPrize += result.prize * (r.betAmount / COMBO_COST);
+    }
+    if(result.status === 'win') winCount++;
     else if(result.status === 'pending') pendingCount++;
     else missCount++;
     if(result.hit === 4) hit4Count++;
 
-    const net = result.prize - COMBO_COST;
+    const hasBet = r.betAmount > 0 && r.betSettled;
+    const dispCost = hasBet ? r.betAmount : COMBO_COST;
+    const dispPrize = hasBet ? result.prize * (r.betAmount / COMBO_COST) : result.prize;
+    const net = dispPrize - dispCost;
     const netStr = net >= 0 ? `+${net}` : `${net}`;
     const netColor = result.status === 'pending' ? '#888' : (net >= 0 ? '#4ecdc4' : '#ff6b6b');
+    const costLabel = hasBet ? r.betAmount : COMBO_COST;
+    const prizeLabel = hasBet ? Math.round(dispPrize) : result.prize;
     let statusHtml = '';
     if(result.status === 'pending'){
-      statusHtml = `<span class="status-pending">待开奖<br><span style="font-size:.8em;color:#888">成本${COMBO_COST}元</span></span>`;
+      statusHtml = `<span class="status-pending">待开奖<br><span style="font-size:.8em;color:#888">成本${costLabel}元</span></span>`;
     } else if(result.status === 'win'){
-      statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元 · <b style="color:${netColor}">${netStr}</b></span>`;
+      statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${prizeLabel}元 · <b style="color:${netColor}">${netStr}</b></span>`;
     } else {
       statusHtml = `<span class="status-miss">中${result.hit}个 · 未中奖<br><b style="color:${netColor}">${netStr}元</b></span>`;
     }
@@ -434,11 +443,8 @@ function renderSavedRecords(){
         ${tempUnits !== betUnits ? `<button class="confirm-bet-btn" onclick="confirmBet(${idx})">确认</button>` : ''}
       </div>`;
     } else if(r.betSettled && r.betAmount > 0){
-      const betNet = result.prize * (r.betAmount / COMBO_COST) - r.betAmount;
-      const betNetStr = betNet >= 0 ? `+${betNet}` : `${betNet}`;
-      const betNetColor = betNet >= 0 ? '#4ecdc4' : '#ff6b6b';
-      betHtml = `<div style="width:100%;text-align:center;font-size:.75em;margin-top:4px">
-        下注${betUnits}注 · 盈亏: <b style="color:${betNetColor}">${betNetStr}元</b>
+      betHtml = `<div style="width:100%;text-align:center;font-size:.75em;margin-top:4px;color:#888">
+        已下注${betUnits}注 · ${r.betAmount}元
       </div>`;
     }
 
@@ -456,7 +462,7 @@ function renderSavedRecords(){
   });
   list.innerHTML = html;
 
-  const netProfit = totalPrize - totalCost;
+  const netProfit = totalBetPrize - totalBetCost;
   const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
   const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
 
@@ -466,9 +472,9 @@ function renderSavedRecords(){
   summary.innerHTML = `
     <span>娱乐本金: <b style="color:${balColor};font-size:1.1em">${balance}</b>元</span>
     <span>保存: <b>${records.length}</b>组</span>
-    <span>成本: <b>${totalCost}</b>元</span>
-    <span>奖金: <b>${totalPrize}</b>元</span>
-    <span>净收益: <b style="color:${netColor}">${netStr}</b>元</span>
+    <span>下注: <b>${totalBetCost}</b>元</span>
+    <span>奖金: <b>${totalBetPrize}</b>元</span>
+    <span>净盈亏: <b style="color:${netColor}">${netStr}</b>元</span>
     <span>中奖: <b>${winCount}</b>组</span>
     <span>待开: <b>${pendingCount}</b>组</span>
     ${hit4Count > 0 ? `<span style="color:#ffd700">中4全中: <b>${hit4Count}</b>次</span>` : ''}
@@ -1032,22 +1038,32 @@ function renderSaved9Records(){
   });
   if(balChanged9) saveSaved9Records(records);
 
-  let totalCost = records.length * COMBO9_COST;
-  let totalPrize = 0, winCount = 0, pendingCount = 0, missCount = 0;
+  let totalBetCost9 = 0;
+  let totalBetPrize9 = 0;
+  let winCount = 0, pendingCount = 0, missCount = 0;
   const ballColors9 = ['#e74c3c','#2ecc71','#e67e22','#1abc9c','#f39c12','#9b59b6','#3498db','#e84393'];
   let html = '';
   records.forEach((r, idx) => {
     const result = checkSaved9RecordHit(r, draws);
     r.status = result.status; r.hit = result.hit; r.prize = result.prize;
-    if(result.status === 'win'){ totalPrize += result.prize; winCount++; }
+    if(r.betAmount > 0){
+      totalBetCost9 += r.betAmount;
+      if(r.betSettled) totalBetPrize9 += result.prize * (r.betAmount / COMBO9_COST);
+    }
+    if(result.status === 'win') winCount++;
     else if(result.status === 'pending') pendingCount++;
     else missCount++;
-    const net9 = result.prize - COMBO9_COST;
+    const hasBet9 = r.betAmount > 0 && r.betSettled;
+    const dispCost9 = hasBet9 ? r.betAmount : COMBO9_COST;
+    const dispPrize9 = hasBet9 ? result.prize * (r.betAmount / COMBO9_COST) : result.prize;
+    const net9 = dispPrize9 - dispCost9;
     const netStr9 = net9 >= 0 ? `+${net9}` : `${net9}`;
     const netColor9 = result.status === 'pending' ? '#888' : (net9 >= 0 ? '#4ecdc4' : '#ff6b6b');
+    const costLabel9 = hasBet9 ? r.betAmount : COMBO9_COST;
+    const prizeLabel9 = hasBet9 ? Math.round(dispPrize9) : result.prize;
     let statusHtml = '';
-    if(result.status === 'pending') statusHtml = `<span class="status-pending">待开奖<br><span style="font-size:.8em;color:#888">成本${COMBO9_COST}元</span></span>`;
-    else if(result.status === 'win') statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${result.prize}元 · <b style="color:${netColor9}">${netStr9}</b></span>`;
+    if(result.status === 'pending') statusHtml = `<span class="status-pending">待开奖<br><span style="font-size:.8em;color:#888">成本${costLabel9}元</span></span>`;
+    else if(result.status === 'win') statusHtml = `<span class="status-win">中${result.hit}个 · ${result.combos}注<br>${prizeLabel9}元 · <b style="color:${netColor9}">${netStr9}</b></span>`;
     else statusHtml = `<span class="status-miss">中${result.hit}个 · 未中奖<br><b style="color:${netColor9}">${netStr9}元</b></span>`;
     let ballsHtml = '';
     r.nums.forEach(n => {
@@ -1074,23 +1090,20 @@ function renderSaved9Records(){
         ${tempUnits9 !== betUnits9 ? `<button class="confirm-bet-btn" onclick="confirm9Bet(${idx})">确认</button>` : ''}
       </div>`;
     } else if(r.betSettled && r.betAmount > 0){
-      const betNet9 = result.prize * (r.betAmount / COMBO9_COST) - r.betAmount;
-      const betNetStr9 = betNet9 >= 0 ? `+${betNet9}` : `${betNet9}`;
-      const betNetColor9 = betNet9 >= 0 ? '#4ecdc4' : '#ff6b6b';
-      betHtml9 = `<div style="width:100%;text-align:center;font-size:.75em;margin-top:4px">
-        下注${betUnits9}注 · 盈亏: <b style="color:${betNetColor9}">${betNetStr9}元</b>
+      betHtml9 = `<div style="width:100%;text-align:center;font-size:.75em;margin-top:4px;color:#888">
+        已下注${betUnits9}注 · ${r.betAmount}元
       </div>`;
     }
 
     html += `<div class="saved-item"><span class="saved-period">${r.targetPeriod}</span><span class="saved-date">${r.savedDate}</span><div class="saved-balls">${ballsHtml}</div><div style="width:100%;text-align:center;font-size:.75em;color:#888;margin-top:2px">回测(${btDays9}天): <b style="color:${btColor9}">${btNetStr9}元</b> · 中奖${btWins9}天</div>${betHtml9}<span class="saved-status">${statusHtml}</span><button class="delete-btn" onclick="delete9Record(${idx})" title="删除">&times;</button></div>`;
   });
   list.innerHTML = html;
-  const netProfit = totalPrize - totalCost;
+  const netProfit = totalBetPrize9 - totalBetCost9;
   const netStr = netProfit >= 0 ? `+${netProfit}` : `${netProfit}`;
   const netColor = netProfit >= 0 ? '#4ecdc4' : '#ff6b6b';
   const balance9 = loadBalance();
   const balColor9 = balance9 >= INIT_BALANCE ? '#4ecdc4' : '#ff6b6b';
-  summary.innerHTML = `<span>娱乐本金: <b style="color:${balColor9};font-size:1.1em">${balance9}</b>元</span><span>保存: <b>${records.length}</b>组</span><span>成本: <b>${totalCost}</b>元</span><span>奖金: <b>${totalPrize}</b>元</span><span>净收益: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span><button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>`;
+  summary.innerHTML = `<span>娱乐本金: <b style="color:${balColor9};font-size:1.1em">${balance9}</b>元</span><span>保存: <b>${records.length}</b>组</span><span>下注: <b>${totalBetCost9}</b>元</span><span>奖金: <b>${totalBetPrize9}</b>元</span><span>净盈亏: <b style="color:${netColor}">${netStr}</b>元</span><span>中奖: <b>${winCount}</b>组</span><span>待开: <b>${pendingCount}</b>组</span><button class="reset-balance-btn" onclick="resetBalance()" title="重置本金">重置本金</button>`;
 
   saveSaved9Records(records);
 }
